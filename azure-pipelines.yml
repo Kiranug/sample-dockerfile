@@ -15,11 +15,19 @@ parameters:
       - prod
 
 variables:
-  - group: $(environment)-variables  # Retrieves environment-specific variables
+  - ${{ if eq(parameters.environment, 'dev') }}:
+      - group: dev-variables
+  - ${{ if eq(parameters.environment, 'qa') }}:
+      - group: QA-variables
+  - ${{ if eq(parameters.environment, 'uat') }}:
+      - group: uat-variables
+  - ${{ if eq(parameters.environment, 'prod') }}:
+      - group: prod-variables
+
   - name: ACR_NAME
     value: "kiranacrdevops"
   - name: IMAGE_NAME
-    value: "myapp$(environment)"
+    value: "myapp-${{ parameters.environment }}"
   - name: IMAGE_TAG
     value: "$(Build.BuildId)"
 
@@ -55,7 +63,7 @@ stages:
               tags: "$(IMAGE_TAG)"
 
   - stage: Deploy
-    displayName: "Deploy to $(environment)"
+    displayName: "Deploy to ${{ parameters.environment }}"
     jobs:
       - job: Deploy
         displayName: "Deploy to AKS"
