@@ -14,6 +14,14 @@ parameters:
       - uat
       - prod
 
+
+variables:
+  - ${{ if eq(parameters.environment, 'dev') }}:
+      - group: dev-variables
+  - ${{ if eq(parameters.environment, 'qa') }}:
+      - group: QA-variables
+  - ${{ if eq(parameters.environment, 'prod') }}:
+      - group: VG-Prod
   - name: branch
     displayName: "Branch to Deploy"
     type: string
