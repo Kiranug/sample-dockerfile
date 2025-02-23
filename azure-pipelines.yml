@@ -22,9 +22,9 @@ parameters:
 variables:
   - group: $(environment)-variables  # Retrieves environment-specific variables
   - name: ACR_NAME
-    value: "myregistry"
+    value: "kiranacrdevops"
   - name: IMAGE_NAME
-    value: "myapp"
+    value: "myapp$(environment)"
   - name: IMAGE_TAG
     value: "$(Build.BuildId)"
 
@@ -85,4 +85,4 @@ stages:
               manifests: |
                 manifests/deployment.yaml
               containers: "$(ACR_NAME).azurecr.io/$(IMAGE_NAME):$(IMAGE_TAG)"
-              imagePullSecrets: "acr-secret"
+              imagePullSecrets: "acrpullapp1"
