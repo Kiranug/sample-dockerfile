@@ -85,9 +85,9 @@ stages:
       displayName: 'Replace Variables in Manifest & Debug'
 
     # Debugging Step: Verify Kubernetes Permissions
-    - script: |
-        kubectl auth can-i get deployments --namespace=${{ parameters.environment }} --as=system:serviceaccount:default:$(K8S_SERVICE_ACCOUNT)
-      displayName: 'Check Kubernetes Permissions'
+    #- script: |
+     #   kubectl auth can-i get deployments --namespace=${{ parameters.environment }} --as=system:serviceaccount:default:$(K8S_SERVICE_ACCOUNT)
+    #  displayName: 'Check Kubernetes Permissions'
 
     - task: KubernetesManifest@1
       displayName: Deploy to AKS
