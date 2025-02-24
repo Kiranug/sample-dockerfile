@@ -60,9 +60,14 @@ stages:
          sed -i "s,{{APP_NAME}},${APP_NAME},g" $(Build.SourcesDirectory)/manifests/deployment.yaml
          sed -i "s,{{ENVIRONMENT}},${ENVIRONMENT},g" $(Build.SourcesDirectory)/manifests/deployment.yaml
          sed -i "s,APP_IMAGE_NAME,${ACR_NAME}.azurecr.io/${APP_NAME}:${IMAGE_TAG},g" $(Build.SourcesDirectory)/manifests/deployment.yaml
+
+    - task: Bash@3
+      displayName: Debug Deployment YAML deployment.yaml
+      inputs:
+        targetType: 'inline'
         script: |
-          cat $(Build.SourcesDirectory)/manifests/deployment.yaml
-          displayName: 'Debug Deployment YAML'
+         cat $(Build.SourcesDirectory)/manifests/deployment.yaml
+         displayName: 'Debug Deployment YAML'
 
     - task: Bash@3
       displayName: Replace placeholders in service.yaml
