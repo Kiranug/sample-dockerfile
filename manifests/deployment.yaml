@@ -24,7 +24,7 @@ spec:
         - name: acrpull-secretnew
       containers:
       - name: {{APP_NAME}}
-        image: APP_IMAGE_NAME
+        image: {{APP_IMAGE_NAME}}
         ports:
         - containerPort: 8080
         env:
