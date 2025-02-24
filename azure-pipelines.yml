@@ -58,17 +58,19 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
-         echo "APP_NAME is: $(APP_NAME)"
+         echo "Replacing placeholders in deployment.yaml..."
          sed -i "s|{{APP_NAME}}|$(APP_NAME)|g" $(Build.SourcesDirectory)/manifests/deployment.yaml
-         sed -i "s|{{ENVIRONMENT}}|$(ENVIRONMENT)|g" $(Build.SourcesDirectory)/manifests/deployment.yaml
-         sed -i "s|APP_IMAGE_NAME|$(CONTAINER_REGISTRY)/$(APP_NAME):$(tag)|g" $(Build.SourcesDirectory)/manifests/deployment.yaml
+         sed -i "s|{{ENVIRONMENT}}|$(parameters.environment)|g" $(Build.SourcesDirectory)/manifests/deployment.yaml
+         sed -i "s|APP_IMAGE_NAME|$(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY):$(tag)|g" $(Build.SourcesDirectory)/manifests/deployment.yaml
+         sed -i "s|{{LOG_LEVEL}}|$(LOG_LEVEL)|g" $(Build.SourcesDirectory)/manifests/deployment.yaml
 
     - task: Bash@3
-      displayName: Debug Deployment YAML deployment.yaml
+      displayName: Debug Final Deployment YAML
       inputs:
         targetType: 'inline'
         script: |
-         cat $(Build.SourcesDirectory)/manifests/deployment.yaml
+          echo "Final deployment.yaml:"
+          cat $(Build.SourcesDirectory)/manifests/deployment.yaml
 
 - stage: DeployToAKS
   displayName: Deploy to AKS (${{ parameters.environment }})
@@ -89,24 +91,34 @@ stages:
     steps:
     - checkout: self
 
+    - task: Bash@3
+      displayName: Debug Deployment Files
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo "Validating deployment files..."
+          ls -la $(Build.SourcesDirectory)/manifests/
+          cat $(Build.SourcesDirectory)/manifests/deployment.yaml
+
     - task: KubernetesManifest@1
       displayName: Deploy to AKS
       inputs:
         action: 'deploy'
         connectionType: 'kubernetesServiceConnection'
         kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)  
-        namespace: $(ENVIRONMENT)  
+        namespace: $(parameters.environment)  
         manifests: |
           $(Build.SourcesDirectory)/manifests/deployment.yaml
-        imagePullSecrets: 'acrpullapp1'
+        imagePullSecrets: 'acrpull-secretnew'
         overrides: |
           spec:
             template:
               spec:
                 containers:
                 - name: my-app-container
+                  image: "$(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY):$(tag)"
                   env:
                   - name: APP_ENV
-                    value: "$(ENVIRONMENT)"
+                    value: "$(parameters.environment)"
                   - name: LOG_LEVEL
                     value: "$(LOG_LEVEL)"
