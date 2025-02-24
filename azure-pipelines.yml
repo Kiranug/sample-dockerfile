@@ -73,8 +73,12 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
+          # Replace the placeholders in service.yaml
           sed -i "s,{{APP_NAME}},${APP_NAME},g" $(Build.SourcesDirectory)/manifests/service.yaml
           sed -i "s,{{ENVIRONMENT}},${ENVIRONMENT},g" $(Build.SourcesDirectory)/manifests/service.yaml
+
+          # Debug: Output the contents of the service.yaml after replacement
+          cat $(Build.SourcesDirectory)/manifests/service.yaml
 
 - stage: DeployToAKS
   displayName: Deploy to AKS (${{ parameters.environment }})
