@@ -69,6 +69,7 @@ stages:
           az aks get-credentials --resource-group $(RESOURCE_GROUP) --name $(CLUSTER_NAME) --overwrite-existing
           kubectl config current-context
           kubectl get nodes -o wide
+          kubectl get secret -n default
 
     - task: DownloadBuildArtifacts@0
       displayName: 'Download Kubernetes Manifests'
