@@ -13,9 +13,9 @@ parameters:
 variables:
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
-  APP_NAME: 'myappmulti'
+  APP_NAME: '$(Build.Repository.Name)' # App name same as repo name
   manifestsPath: '$(Build.SourcesDirectory)/manifests/'
-  IMAGE_REPOSITORY: 'myappmulti'
+  IMAGE_REPOSITORY: '$(Build.Repository.Name)'
 
 stages:
 - stage: BuildAndPush
@@ -24,42 +24,17 @@ stages:
   - job: Build
     displayName: Build and Push Docker Image to ACR
     pool: default
-    variables:
-      - ${{ if eq(parameters.environment, 'dev') }}:
-        - group: dev-variables
-      - ${{ if eq(parameters.environment, 'qa') }}:
-        - group: qa-variables
-      - ${{ if eq(parameters.environment, 'uat') }}:
-        - group: uat-variables
-      - ${{ if eq(parameters.environment, 'prod') }}:
-        - group: prod-variables
     steps:
     - task: Docker@2
       displayName: Build and Push Docker Image
       inputs:
         command: buildAndPush
-        repository: $(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY)  # Using CONTAINER_REGISTRY variable
+        repository: $(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY)
         dockerfile: $(dockerfilePath)
-        containerRegistry: $(dockerRegistryServiceConnection)  # Service connection name
+        containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(tag)
 
-    - task: Bash@3
-      displayName: Replace placeholders in deployment.yaml
-      inputs:
-        targetType: 'inline'
-        script: |
-         echo "Replacing placeholders in deployment.yaml..."
-         sed -i "s|{{APP_NAME}}|$(APP_NAME)|g" $(Build.SourcesDirectory)/manifests/deployment.yaml
-         
-    - task: Bash@3
-      displayName: Debug Final Deployment YAML
-      inputs:
-        targetType: 'inline'
-        script: |
-          echo "Final deployment.yaml:"
-          cat $(Build.SourcesDirectory)/manifests/deployment.yaml
-          
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Kubernetes Manifests'
       inputs:
@@ -74,33 +49,19 @@ stages:
   - job: Deploy
     displayName: Deploy to AKS using Kubernetes Manifests
     pool: default
-    variables:
-      - ${{ if eq(parameters.environment, 'dev') }}:
-        - group: dev-variables
-      - ${{ if eq(parameters.environment, 'qa') }}:
-        - group: qa-variables
-      - ${{ if eq(parameters.environment, 'uat') }}:
-        - group: uat-variables
-      - ${{ if eq(parameters.environment, 'prod') }}:
-        - group: prod-variables
     steps:
-    - checkout: self
-
-    - task: Bash@3
-      displayName: Debug Deployment Files
+    - task: DownloadBuildArtifacts@0
+      displayName: 'Download Kubernetes Manifests'
       inputs:
-        targetType: 'inline'
-        script: |
-          echo "Validating deployment files..."
-          ls -la $(Build.SourcesDirectory)/manifests/
-          cat $(Build.SourcesDirectory)/manifests/deployment.yaml
+        artifactName: 'kube-manifest'
+        downloadPath: '$(Build.SourcesDirectory)/manifests/'
 
     - task: KubernetesManifest@1
       displayName: Deploy to AKS
       inputs:
         action: 'deploy'
         connectionType: 'kubernetesServiceConnection'
-        kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)  
+        kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)
         namespace: $(IMAGE_REPOSITORY)
         manifests: |
           $(Build.SourcesDirectory)/manifests/deployment.yaml
@@ -110,10 +71,8 @@ stages:
             template:
               spec:
                 containers:
-                - name: my-app-container
+                - name: $(APP_NAME)
                   image: "$(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY):$(tag)"
                   env:
                   - name: APP_ENV
-                    value: "$(parameters.environment)"
-                  - name: LOG_LEVEL
-                    value: "$(LOG_LEVEL)"
+                    value: "${{ parameters.environment }}"
