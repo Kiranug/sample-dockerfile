@@ -81,6 +81,16 @@ stages:
         echo $(APP_NAME)
       displayName: 'Print APP_NAME'
 
+     # Debugging Step: print IMAGE_REPOSITORY
+    - script: |
+        echo $(IMAGE_REPOSITORY)
+      displayName: 'Print IMAGE_REPOSITORY'
+    
+       # Debugging Step: print $(Build.Repository.Name)
+    - script: |
+        echo $(Build.Repository.Name)
+      displayName: 'Print IMAGE_REPOSITORY'
+
     # Debugging Step: Ensure Variables Are Replaced in the Manifest
     - script: |
         sed -i "s,{{APP_NAME}},$(APP_NAME)," $(Build.SourcesDirectory)/manifests/deployment.yaml
