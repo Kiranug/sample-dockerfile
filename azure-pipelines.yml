@@ -68,17 +68,17 @@ stages:
         script: |
          cat $(Build.SourcesDirectory)/manifests/deployment.yaml
 
-   - task: Bash@3
-     displayName: Replace placeholders in service.yaml
-     inputs:
-       targetType: 'inline'
-       script: |
-         echo "Replacing {{APP_NAME}} and {{SERVICE_SUFFIX}} in service.yaml"
-         sed -i "s,{{APP_NAME}},${APP_NAME},g" $(Build.SourcesDirectory)/manifests/service.yaml
-         sed -i "s,{{SERVICE_SUFFIX}},service,g" $(Build.SourcesDirectory)/manifests/service.yaml
+    - task: Bash@3
+      displayName: Replace placeholders in service.yaml
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo "Replacing {{APP_NAME}} and {{SERVICE_SUFFIX}} in service.yaml"
+          sed -i "s,{{APP_NAME}},${APP_NAME},g" $(Build.SourcesDirectory)/manifests/service.yaml
+          sed -i "s,{{SERVICE_SUFFIX}},service,g" $(Build.SourcesDirectory)/manifests/service.yaml
    
-         # Debug the content after replacement
-         cat $(Build.SourcesDirectory)/manifests/service.yaml
+          # Debug the content after replacement
+          cat $(Build.SourcesDirectory)/manifests/service.yaml
 
 
 - stage: DeployToAKS
