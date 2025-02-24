@@ -55,6 +55,22 @@ stages:
         artifactName: 'kube-manifest'
         downloadPath: '$(Build.SourcesDirectory)/manifests/'
 
+    # Debugging: Output the environment and variables
+    - script: |
+        echo "Environment: ${{ parameters.environment }}"
+        echo "APP_NAME: $(APP_NAME)"
+        echo "IMAGE_REPOSITORY: $(IMAGE_REPOSITORY)"
+        echo "Tag: $(tag)"
+        echo "Namespace: ${{ parameters.environment }}"
+        echo "Manifest Path: $(Build.SourcesDirectory)/manifests/deployment.yaml"
+      displayName: 'Debug Variables'
+
+    # Debugging: Print the content of the Kubernetes manifest file
+    - script: |
+        echo "Kubernetes Manifest File Content:"
+        cat $(Build.SourcesDirectory)/manifests/deployment.yaml
+      displayName: 'Show Manifest File'
+
     - task: KubernetesManifest@1
       displayName: Deploy to AKS
       inputs:
