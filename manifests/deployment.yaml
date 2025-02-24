@@ -21,15 +21,15 @@ spec:
         app: {{APP_NAME}}
     spec:
       imagePullSecrets:
-        - name: acrpull-secretnew
+        - name: acrpull-secretnew  # Reference the secret created
       containers:
       - name: {{APP_NAME}}
-        image: APP_IMAGE_NAME
+        image: TEST_IMAGE_NAME
         ports:
         - containerPort: 8080
         env:
         - name: ENVIRONMENT
-          value: {{ENVIRONMENT}}
+          value: {{DEPLOY_ENV}}
         resources:
           requests:
             cpu: "100m"
@@ -43,17 +43,3 @@ spec:
             port: 8080
           initialDelaySeconds: 5
           periodSeconds: 10
-
----
-# Separate the Service definition using ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{APP_NAME}}
-spec:
-  type: LoadBalancer
-  ports:
-  - port: 80
-    targetPort: 8080
-  selector:
-    app: {{APP_NAME}}
