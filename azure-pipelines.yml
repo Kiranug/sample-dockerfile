@@ -93,12 +93,12 @@ stages:
         echo "Listing service accounts in the dev namespace..."
         kubectl get serviceaccounts --namespace=dev
         echo "Checking permissions for the service account..."
-        kubectl auth can-i get deployments --namespace=dev --as=system:serviceaccount:default:default
-        kubectl auth can-i get services --namespace=dev --as=system:serviceaccount:default:default
+        kubectl auth can-i get deployments --namespace=dev --as=system:serviceaccount:dev:default
+        kubectl auth can-i get services --namespace=dev --as=system:serviceaccount:dev:default
         displayName: 'Check Service Account Permissions'     
 
     - task: KubernetesManifest@1
-      displayName: Deploy to AKS
+      displayName: Deploy to AKS using serviceaccount:dev:default
       inputs:
         action: 'deploy'
         connectionType: 'kubernetesServiceConnection'
@@ -111,3 +111,6 @@ stages:
         containers: |
           $(APP_NAME)=$(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY):$(tag)
         valueFile: $(Build.SourcesDirectory)/manifests/values.yaml
+        # Ensure the serviceAccountName is set in the manifest or implicitly using kubectl context
+        kubectlOptions: '--as=system:serviceaccount:dev:default'
+
