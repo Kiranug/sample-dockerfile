@@ -23,8 +23,7 @@ stages:
   jobs:
   - job: Build
     displayName: Build and Push Docker Image to ACR
-    pool:
-      vmImage: 'windows-latest'
+    pool: default
     variables:
       - ${{ if eq(parameters.environment, 'dev') }}:
         - group: dev-variables
@@ -58,8 +57,7 @@ stages:
   jobs:
   - job: Deploy
     displayName: Deploy to AKS using Kubernetes Manifests
-    pool:
-      vmImage: 'windows-latest'
+    pool: default
     variables:
       - ${{ if eq(parameters.environment, 'dev') }}:
         - group: dev-variables
