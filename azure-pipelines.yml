@@ -68,17 +68,6 @@ stages:
         script: |
          cat $(Build.SourcesDirectory)/manifests/deployment.yaml
 
-    - task: Bash@3
-      displayName: Replace placeholders in service.yaml
-      inputs:
-        targetType: 'inline'
-        script: |
-          echo "Replacing {{APP_NAME}} and {{SERVICE_SUFFIX}} in service.yaml"
-          sed -i "s,{{APP_NAME}},${APP_NAME},g" $(Build.SourcesDirectory)/manifests/service.yaml
-   
-          # Debug the content after replacement
-          cat $(Build.SourcesDirectory)/manifests/service.yaml
-
 
 - stage: DeployToAKS
   displayName: Deploy to AKS (${{ parameters.environment }})
@@ -108,7 +97,6 @@ stages:
         namespace: $(ENVIRONMENT)  # Use the environment variable instead of hardcoded 'dev'
         manifests: |
           $(Build.SourcesDirectory)/manifests/deployment.yaml
-          $(Build.SourcesDirectory)/manifests/service.yaml
         imagePullSecrets: 'acrpullapp1'  # If needed, you can use ACR pull secrets here
         # Remove the containers field here, as it's already replaced in deployment.yaml
         overrides: |
