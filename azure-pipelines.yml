@@ -96,6 +96,10 @@ stages:
      #   kubectl auth can-i get deployments --namespace=dev --as=system:serviceaccount:dev:default
      #   kubectl auth can-i get services --namespace=dev --as=system:serviceaccount:dev:default
       #  displayName: 'Check Service Account Permissions'     
+    - script: |
+        kubectl config view --minify
+        kubectl get serviceaccount default -n dev
+        displayName: 'Check ServiceAccount'
 
     - task: KubernetesManifest@1
       displayName: Deploy to AKS using serviceaccount:dev:default
