@@ -77,36 +77,27 @@ stages:
         downloadPath: '$(Build.SourcesDirectory)/manifests/'
 
     # Debugging Step: Ensure Variables Are Replaced in the Manifest
-   # - script: |
-   #     sed -i 's|$(APP_NAME)|$(Build.Repository.Name)|g' $(Build.SourcesDirectory)/manifests/deployment.yaml
-    #    sed -i 's|$(APP_NAME)|$(Build.Repository.Name)|g' $(Build.SourcesDirectory)/manifests/service.yaml
-    #    echo "=== Debug: Deployment YAML ==="
-    #    cat $(Build.SourcesDirectory)/manifests/deployment.yaml
-    #  displayName: 'Replace Variables in Manifest & Debug'
+    - script: |
+        sed -i 's|$(APP_NAME)|$(Build.Repository.Name)|g' $(Build.SourcesDirectory)/manifests/deployment.yaml
+        echo "=== Debug: Deployment YAML ==="
+        cat $(Build.SourcesDirectory)/manifests/deployment.yaml
+      displayName: 'Replace Variables in Manifest & Debug'
 
     # Debugging Step: Verify Kubernetes Permissions
-    #- script: |
-     #   kubectl auth can-i get deployments --namespace=${{ parameters.environment }} --as=system:serviceaccount:default:$(K8S_SERVICE_ACCOUNT)
-    #  displayName: 'Check Kubernetes Permissions'
-
-    #- script: |
-     #   echo "Listing service accounts in the dev namespace..."
-     #   kubectl get serviceaccounts --namespace=dev
-     #   echo "Checking permissions for the service account..."
-     #   kubectl auth can-i get deployments --namespace=dev --as=system:serviceaccount:dev:default
-     #   kubectl auth can-i get services --namespace=dev --as=system:serviceaccount:dev:default
-      #  displayName: 'Check Service Account Permissions'     
     - script: |
         kubectl config view --minify
         kubectl get serviceaccount default -n dev
+      displayName: 'Check Kubernetes Permissions'
+
+    # Deploy to AKS using the default service account (in dev namespace)
     - task: KubernetesManifest@1
       displayName: Deploy to AKS using serviceaccount:dev:default
       inputs:
         action: 'deploy'
         connectionType: 'kubernetesServiceConnection'
         kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)  # Kubernetes Service Connection name
+        namespace: '$(environment)'  # Use environment parameter to set the namespace (dev, qa, etc.)
         manifests: |
           $(Build.SourcesDirectory)/manifests/deployment.yaml
-        imagePullSecrets: 'acrpull'
-        containers: |
-          $(APP_NAME)=$(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY):$(tag)
+          $(Build.SourcesDirectory)/manifests/service.yaml
+        imagePullSecrets: 'acrpull'  # Use image pull secret as necessary
