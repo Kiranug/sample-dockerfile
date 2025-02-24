@@ -84,6 +84,9 @@ stages:
     # Debugging Step: Ensure Variables Are Replaced in the Manifest
     - script: |
         sed -i "s,{{APP_NAME}},$(APP_NAME)," $(Build.SourcesDirectory)/manifests/deployment.yaml
+        sed -i "s,{{CONTAINER_REGISTRY}},$(CONTAINER_REGISTRY)," $(Build.SourcesDirectory)/manifests/deployment.yaml
+        sed -i "s,{{IMAGE_REPOSITORY}},$(IMAGE_REPOSITORY)," $(Build.SourcesDirectory)/manifests/deployment.yaml
+        sed -i "s,{{tag}},$(tag)," $(Build.SourcesDirectory)/manifests/deployment.yaml
         echo "=== Debug: Deployment YAML ==="
         cat $(Build.SourcesDirectory)/manifests/deployment.yaml
       displayName: 'Replace Variables in Manifest & Debug'
