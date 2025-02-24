@@ -29,7 +29,7 @@ spec:
         - containerPort: 8080
         env:
         - name: ENVIRONMENT
-          value: {{DEPLOY_ENV}}
+          value: {{ENVIRONMENT}}
         resources:
           requests:
             cpu: "100m"
