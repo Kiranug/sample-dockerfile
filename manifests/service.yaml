@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{APP_NAME}}-{{SERVICE_SUFFIX}}
+  name: {{APP_NAME}}
 spec:
   type: LoadBalancer
   ports:
