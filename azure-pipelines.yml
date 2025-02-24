@@ -55,8 +55,8 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
-          sed -i "s,{{APP_NAME}},${APP_NAME},g" $(Build.SourcesDirectory)/manifest/deployment.yaml
-          sed -i "s,{{ENVIRONMENT}},${ENVIRONMENT},g" $(Build.SourcesDirectory)/manifest/deployment.yaml
+          sed -i "s,{{APP_NAME}},${APP_NAME},g" $(Build.SourcesDirectory)/manifests/deployment.yaml
+          sed -i "s,{{ENVIRONMENT}},${ENVIRONMENT},g" $(Build.SourcesDirectory)/manifests/deployment.yaml
           sed -i "s,APP_IMAGE_NAME,${ACR_NAME}.azurecr.io/${APP_NAME}:${IMAGE_TAG},g" $(Build.SourcesDirectory)/k8s/deployment.yaml
 
     - task: Bash@3
@@ -64,8 +64,8 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
-          sed -i "s,{{APP_NAME}},${APP_NAME},g" $(Build.SourcesDirectory)/manifest/service.yaml
-          sed -i "s,{{ENVIRONMENT}},${ENVIRONMENT},g" $(Build.SourcesDirectory)/manifest/service.yaml
+          sed -i "s,{{APP_NAME}},${APP_NAME},g" $(Build.SourcesDirectory)/manifests/service.yaml
+          sed -i "s,{{ENVIRONMENT}},${ENVIRONMENT},g" $(Build.SourcesDirectory)/manifests/service.yaml
 
 - stage: DeployToAKS
   displayName: Deploy to AKS (${{ parameters.environment }})
@@ -94,8 +94,8 @@ stages:
         kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)  # From variable group
         namespace: $(NAMESPACE)  # From variable group
         manifests: |
-          $(Build.SourcesDirectory)/manifest/deployment.yaml
-          $(Build.SourcesDirectory)/manifest/services.msc
+          $(Build.SourcesDirectory)/manifests/deployment.yaml
+          $(Build.SourcesDirectory)/manifests/services.msc
         containers: '$(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY):$(tag)'
         imagePullSecrets: 'acrpullapp1'
         overrides: |
