@@ -1,6 +1,4 @@
-trigger:
-- main
-
+trigger: none
 parameters:
   - name: environment
     displayName: "Select Environment"
