@@ -99,8 +99,6 @@ stages:
     - script: |
         kubectl config view --minify
         kubectl get serviceaccount default -n dev
-        displayName: 'Check ServiceAccount'
-
     - task: KubernetesManifest@1
       displayName: Deploy to AKS using serviceaccount:dev:default
       inputs:
@@ -114,7 +112,3 @@ stages:
         imagePullSecrets: 'acrpull'
         containers: |
           $(APP_NAME)=$(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY):$(tag)
-        valueFile: $(Build.SourcesDirectory)/manifests/values.yaml
-        # Ensure the serviceAccountName is set in the manifest or implicitly using kubectl context
-        kubectlOptions: '--as=system:serviceaccount:dev:default'
-
