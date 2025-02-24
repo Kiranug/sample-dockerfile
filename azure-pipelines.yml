@@ -103,7 +103,7 @@ stages:
         action: 'deploy'
         connectionType: 'kubernetesServiceConnection'
         kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)  
-        namespace: $(parameters.environment)  
+        namespace: $(IMAGE_REPOSITORY)
         manifests: |
           $(Build.SourcesDirectory)/manifests/deployment.yaml
         imagePullSecrets: 'acrpull-secretnew'
