@@ -38,12 +38,11 @@ stages:
       displayName: Build and Push Docker Image
       inputs:
         command: buildAndPush
-        repository: $(IMAGE_REPOSITORY)  # From variable group
+        repository: $(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY)  # ACR registry + image name
         dockerfile: $(dockerfilePath)
-        containerRegistry: $(dockerRegistryServiceConnection)  # From variable group
+        containerRegistry: $(dockerRegistryServiceConnection)  # Use the service connection name directly
         tags: |
           $(tag)
-
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Kubernetes Manifests'
       inputs:
