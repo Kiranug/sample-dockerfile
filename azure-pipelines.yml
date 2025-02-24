@@ -46,13 +46,6 @@ stages:
         tags: |
           $(tag)
 
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Kubernetes Manifests'
-      inputs:
-        PathtoPublish: '$(manifestsPath)'
-        ArtifactName: 'kube-manifest'
-        publishLocation: 'Container'
-
     - task: Bash@3
       displayName: Replace placeholders in deployment.yaml
       inputs:
@@ -71,6 +64,13 @@ stages:
         script: |
           echo "Final deployment.yaml:"
           cat $(Build.SourcesDirectory)/manifests/deployment.yaml
+          
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Kubernetes Manifests'
+      inputs:
+        PathtoPublish: '$(manifestsPath)'
+        ArtifactName: 'kube-manifest'
+        publishLocation: 'Container'
 
 - stage: DeployToAKS
   displayName: Deploy to AKS (${{ parameters.environment }})
