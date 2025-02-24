@@ -17,9 +17,8 @@ variables:
   APP_NAME: '$(Build.Repository.Name)'  # App name same as repo name
   manifestsPath: '$(Build.SourcesDirectory)/manifests/'
   IMAGE_REPOSITORY: '$(Build.Repository.Name)'
-  K8S_SERVICE_ACCOUNT: 'devops-sa' # Ensure this service account exists in Kubernetes
-  RESOURCE_GROUP: 'myResourceGroup'  # Update with your AKS resource group
-  CLUSTER_NAME: 'myAKSCluster'  # Update with your AKS cluster name
+  RESOURCE_GROUP: 'spoke1-rg'  # Update with your AKS resource group
+  CLUSTER_NAME: 'dev-aks-cluster'  # Update with your AKS cluster name
 
 stages:
 
