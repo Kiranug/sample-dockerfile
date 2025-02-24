@@ -15,9 +15,9 @@ parameters:
 variables:
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
-  APP_NAME: ${{ format('{0}', toLower(replace(Build.Repository.Name, '[^a-z0-9]', '')))}}
+  APP_NAME: 'myappmulti'
   manifestsPath: '$(Build.SourcesDirectory)/manifests/'
-  IMAGE_REPOSITORY: ${{ format('{0}', toLower(replace(Build.Repository.Name, '[^a-z0-9]', '')))}}
+  IMAGE_REPOSITORY: 'myappmulti'
 
 stages:
 - stage: BuildAndPush
