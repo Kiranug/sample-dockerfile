@@ -59,7 +59,7 @@ stages:
          echo "APP_NAME is: $(APP_NAME)"
          sed -i "s,{{APP_NAME}},${APP_NAME},g" $(Build.SourcesDirectory)/manifests/deployment.yaml
          sed -i "s,{{ENVIRONMENT}},${ENVIRONMENT},g" $(Build.SourcesDirectory)/manifests/deployment.yaml
-         sed -i "s,APP_IMAGE_NAME,${ACR_NAME}.azurecr.io/${APP_NAME}:${IMAGE_TAG},g" $(Build.SourcesDirectory)/manifests/deployment.yaml
+         sed -i "s,APP_IMAGE_NAME,${ACR_NAME}.azurecr.io/${APP_NAME}:${$(tag)},g" $(Build.SourcesDirectory)/manifests/deployment.yaml
 
     - task: Bash@3
       displayName: Debug Deployment YAML deployment.yaml
@@ -67,7 +67,6 @@ stages:
         targetType: 'inline'
         script: |
          cat $(Build.SourcesDirectory)/manifests/deployment.yaml
-         displayName: 'Debug Deployment YAML'
 
     - task: Bash@3
       displayName: Replace placeholders in service.yaml
@@ -102,12 +101,12 @@ stages:
         action: 'deploy'
         connectionType: 'kubernetesServiceConnection'
         kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)  # From variable group
-        namespace: 'dev'  # From variable group
+        namespace: $(ENVIRONMENT)  # Use the environment variable instead of hardcoded 'dev'
         manifests: |
           $(Build.SourcesDirectory)/manifests/deployment.yaml
-          $(Build.SourcesDirectory)/manifests/services.yaml
-        containers: '$(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY):$(tag)'
-        imagePullSecrets: 'acrpullapp1'
+          $(Build.SourcesDirectory)/manifests/service.yaml
+        imagePullSecrets: 'acrpullapp1'  # If needed, you can use ACR pull secrets here
+        # Remove the containers field here, as it's already replaced in deployment.yaml
         overrides: |
           spec:
             template:
