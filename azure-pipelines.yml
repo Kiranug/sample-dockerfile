@@ -53,10 +53,7 @@ stages:
         script: |
          echo "Replacing placeholders in deployment.yaml..."
          sed -i "s|{{APP_NAME}}|$(APP_NAME)|g" $(Build.SourcesDirectory)/manifests/deployment.yaml
-         sed -i "s|{{ENVIRONMENT}}|$(parameters.environment)|g" $(Build.SourcesDirectory)/manifests/deployment.yaml
-         sed -i "s|APP_IMAGE_NAME|$(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY):$(tag)|g" $(Build.SourcesDirectory)/manifests/deployment.yaml
-         sed -i "s|{{LOG_LEVEL}}|$(LOG_LEVEL)|g" $(Build.SourcesDirectory)/manifests/deployment.yaml
-
+         
     - task: Bash@3
       displayName: Debug Final Deployment YAML
       inputs:
