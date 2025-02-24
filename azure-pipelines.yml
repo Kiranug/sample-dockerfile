@@ -14,8 +14,8 @@ parameters:
 
 variables:
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
-  manifestsPath: '$(Build.SourcesDirectory)/kubernetes.yml'  # Single manifest for all environments
   tag: '$(Build.BuildId)'
+  APP_NAME: $(Build.Repository.Name)
 
 stages:
 - stage: BuildAndPush
@@ -49,6 +49,22 @@ stages:
         PathtoPublish: '$(manifestsPath)'
         ArtifactName: 'kube-manifest'
         publishLocation: 'Container'
+    - task: Bash@3
+      displayName: Replace placeholders in deployment.yaml
+      inputs:
+        targetType: 'inline'
+        script: |
+          sed -i "s,{{APP_NAME}},${APP_NAME},g" $(Build.SourcesDirectory)/manifest/deployment.yaml
+          sed -i "s,{{ENVIRONMENT}},${ENVIRONMENT},g" $(Build.SourcesDirectory)/manifest/deployment.yaml
+          sed -i "s,APP_IMAGE_NAME,${ACR_NAME}.azurecr.io/${APP_NAME}:${IMAGE_TAG},g" $(Build.SourcesDirectory)/k8s/deployment.yaml
+
+    - task: Bash@3
+      displayName: Replace placeholders in service.yaml
+      inputs:
+        targetType: 'inline'
+        script: |
+          sed -i "s,{{APP_NAME}},${APP_NAME},g" $(Build.SourcesDirectory)/manifest/service.yaml
+          sed -i "s,{{ENVIRONMENT}},${ENVIRONMENT},g" $(Build.SourcesDirectory)/manifest/service.yaml
 
 - stage: DeployToAKS
   displayName: Deploy to AKS (${{ parameters.environment }})
@@ -76,7 +92,9 @@ stages:
         connectionType: 'kubernetesServiceConnection'
         kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)  # From variable group
         namespace: $(NAMESPACE)  # From variable group
-        manifests: '$(manifestsPath)'
+        manifests: |
+          $(Build.SourcesDirectory)/manifest/deployment.yaml
+          $(Build.SourcesDirectory)/manifest/services.msc
         containers: '$(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY):$(tag)'
         imagePullSecrets: 'acrpullapp1'
         overrides: |
@@ -87,6 +105,6 @@ stages:
                 - name: my-app-container
                   env:
                   - name: APP_ENV
-                    value: "$(APP_ENV)"   # From variable group
+                    value: "$(ENVIRONMENT)"   # From variable group
                   - name: LOG_LEVEL
                     value: "$(LOG_LEVEL)" # From variable group
