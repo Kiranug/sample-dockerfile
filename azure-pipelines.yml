@@ -35,13 +35,6 @@ stages:
         tags: |
           $(tag)
 
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Kubernetes Manifests'
-      inputs:
-        PathtoPublish: '$(manifestsPath)'
-        ArtifactName: 'kube-manifest'
-        publishLocation: 'Container'
-
 - stage: DeployToAKS
   displayName: Deploy to AKS (${{ parameters.environment }})
   dependsOn: BuildAndPush
@@ -55,6 +48,12 @@ stages:
       inputs:
         artifactName: 'kube-manifest'
         downloadPath: '$(Build.SourcesDirectory)/manifests/'
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Kubernetes Manifests'
+      inputs:
+        PathtoPublish: '$(manifestsPath)'
+        ArtifactName: 'kube-manifest'
+        publishLocation: 'Container'
 
     - task: KubernetesManifest@1
       displayName: Deploy to AKS
