@@ -59,7 +59,7 @@ stages:
     - task: AzureCLI@2
       displayName: 'Login to Azure and Get AKS Credentials'
       inputs:
-        azureSubscription: '$(AZURE_SERVICE_CONNECTION)'  # Using Azure Service Connection
+        azureSubscription: '$(AZURE_SUBSCRIPTION)'  # Using Azure Service Connection
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
