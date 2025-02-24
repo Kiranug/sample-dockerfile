@@ -65,7 +65,7 @@ stages:
         namespace: "${{ parameters.environment }}"
         manifests: |
           $(Build.SourcesDirectory)/manifests/deployment.yaml
-        imagePullSecrets: 'acrpull-secretnew'
+        imagePullSecrets: 'acrpull'
         overrides: |
           spec:
             template:
