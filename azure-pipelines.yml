@@ -77,12 +77,12 @@ stages:
         downloadPath: '$(Build.SourcesDirectory)/manifests/'
 
     # Debugging Step: Ensure Variables Are Replaced in the Manifest
-    - script: |
-        sed -i 's|$(APP_NAME)|$(Build.Repository.Name)|g' $(Build.SourcesDirectory)/manifests/deployment.yaml
-        sed -i 's|$(APP_NAME)|$(Build.Repository.Name)|g' $(Build.SourcesDirectory)/manifests/service.yaml
-        echo "=== Debug: Deployment YAML ==="
-        cat $(Build.SourcesDirectory)/manifests/deployment.yaml
-      displayName: 'Replace Variables in Manifest & Debug'
+   # - script: |
+   #     sed -i 's|$(APP_NAME)|$(Build.Repository.Name)|g' $(Build.SourcesDirectory)/manifests/deployment.yaml
+    #    sed -i 's|$(APP_NAME)|$(Build.Repository.Name)|g' $(Build.SourcesDirectory)/manifests/service.yaml
+    #    echo "=== Debug: Deployment YAML ==="
+    #    cat $(Build.SourcesDirectory)/manifests/deployment.yaml
+    #  displayName: 'Replace Variables in Manifest & Debug'
 
     # Debugging Step: Verify Kubernetes Permissions
     #- script: |
@@ -108,7 +108,6 @@ stages:
         namespace: "${{ parameters.environment }}"
         manifests: |
           $(Build.SourcesDirectory)/manifests/deployment.yaml
-          $(Build.SourcesDirectory)/manifests/service.yaml
         imagePullSecrets: 'acrpull'
         containers: |
           $(APP_NAME)=$(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY):$(tag)
