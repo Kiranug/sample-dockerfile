@@ -17,6 +17,7 @@ variables:
   tag: '$(Build.BuildId)'
   APP_NAME: $(Build.Repository.Name)
   manifestsPath: '$(Build.SourcesDirectory)/manifests/'
+  IMAGE_REPOSITORY: $(Build.Repository.Name)
 
 stages:
 - stage: BuildAndPush
