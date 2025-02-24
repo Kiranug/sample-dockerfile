@@ -19,6 +19,8 @@ variables:
   IMAGE_REPOSITORY: '$(Build.Repository.Name)'
   RESOURCE_GROUP: 'spoke1-rg'  # Update with your AKS resource group
   CLUSTER_NAME: 'dev-aks-cluster'  # Update with your AKS cluster name
+  AZURE_SUBSCRIPTION: 'my-azure-service-connection'  # Set this to the name of your service connection
+  K8S_SERVICE_CONNECTION: 'myakscred'  # Kubernetes service connection name (if applicable)
 
 stages:
 
@@ -59,10 +61,11 @@ stages:
     - task: AzureCLI@2
       displayName: 'Login to Azure and Get AKS Credentials'
       inputs:
-        azureSubscription: '$(AZURE_SUBSCRIPTION)'  # Using Azure Service Connection
+        azureSubscription: '$(AZURE_SUBSCRIPTION)'  # Using Azure Service Connection (Set to name of your Azure service connection)
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
+          echo "Logging into Azure..."
           az aks get-credentials --resource-group $(RESOURCE_GROUP) --name $(CLUSTER_NAME) --overwrite-existing
           kubectl config current-context
           kubectl get nodes -o wide
@@ -91,7 +94,7 @@ stages:
       inputs:
         action: 'deploy'
         connectionType: 'kubernetesServiceConnection'
-        kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)
+        kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)  # Kubernetes Service Connection name
         namespace: "${{ parameters.environment }}"
         manifests: |
           $(Build.SourcesDirectory)/manifests/deployment.yaml
