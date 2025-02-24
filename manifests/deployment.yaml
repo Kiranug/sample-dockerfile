@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: myappmulti-{{ENVIRONMENT}}  # Ensure this variable is properly replaced
+  name: myappmulti  # Ensure this variable is properly replaced
   labels:
     app: {{APP_NAME}}
 spec:
