@@ -1,26 +1,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: $(APP_NAME)-deployment
+  name: {{APP_NAME}}-deployment
   labels:
-    app: $(APP_NAME)
+    app: {{APP_NAME}}
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: $(APP_NAME)
+      app: {{APP_NAME}}
   template:
     metadata:
       labels:
-        app: $(APP_NAME)
+        app: {{APP_NAME}}
     spec:
       containers:
-        - name: '$(APP_NAME)'  # Corrected the quote here
-          image: "$(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY):$(tag)"
+        - name: {{APP_NAME}}  # Fixed the missing closing quote
+          image: "{{CONTAINER_REGISTRY}}/{{IMAGE_REPOSITORY}}:{{tag}}"
           imagePullPolicy: Always
           env:
             - name: APP_ENV
-              value: $(APP_NAME)  # Replaced with $(APP_NAME) for variable substitution
+              value: {{APP_NAME}}
           ports:
             - containerPort: 80
           resources:
@@ -34,13 +34,14 @@ spec:
         - name: acrpull  # Secret for pulling images from Azure Container Registry (ACR)
 
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
-  name: $(APP_NAME)-service
+  name: {{APP_NAME}}-service
 spec:
   selector:
-    app: $(APP_NAME)
+    app: {{APP_NAME}}
   ports:
     - protocol: TCP
       port: 80
