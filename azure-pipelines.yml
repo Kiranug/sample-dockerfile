@@ -16,7 +16,7 @@ variables:
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
   APP_NAME: $(Build.Repository.Name)
-  manifestsPath: '$(Build.SourcesDirectory)/manifest/'
+  manifestsPath: '$(Build.SourcesDirectory)/manifests/'
 
 stages:
 - stage: BuildAndPush
