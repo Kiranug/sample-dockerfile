@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: '{{APP_NAME}}
-          image: " {{CONTAINER_REGISTRY}}/{IMAGE_REPOSITORY}}:{{tag}}"
+          image: " {{CONTAINER_REGISTRY}}/{{IMAGE_REPOSITORY}}:{{tag}}"
           imagePullPolicy: Always
           env:
             - name: APP_ENV
