@@ -1,4 +1,5 @@
 trigger: none
+
 parameters:
   - name: environment
     displayName: "Select Environment"
@@ -13,11 +14,13 @@ parameters:
 variables:
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
-  APP_NAME: '$(Build.Repository.Name)' # App name same as repo name
+  APP_NAME: '$(Build.Repository.Name)'  # App name same as repo name
   manifestsPath: '$(Build.SourcesDirectory)/manifests/'
   IMAGE_REPOSITORY: '$(Build.Repository.Name)'
+  K8S_SERVICE_ACCOUNT: 'devops-sa' # Ensure this service account exists in Kubernetes
 
 stages:
+
 - stage: BuildAndPush
   displayName: Build and Push Docker Image
   jobs:
@@ -34,6 +37,7 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(tag)
+
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Kubernetes Manifests'
       inputs:
@@ -49,27 +53,25 @@ stages:
     displayName: Deploy to AKS using Kubernetes Manifests
     pool: default
     steps:
+    
     - task: DownloadBuildArtifacts@0
       displayName: 'Download Kubernetes Manifests'
       inputs:
         artifactName: 'kube-manifest'
         downloadPath: '$(Build.SourcesDirectory)/manifests/'
 
-    # Debugging: Output the environment and variables
+    # Debugging Step: Ensure Variables Are Replaced in the Manifest
     - script: |
-        echo "Environment: ${{ parameters.environment }}"
-        echo "APP_NAME: $(APP_NAME)"
-        echo "IMAGE_REPOSITORY: $(IMAGE_REPOSITORY)"
-        echo "Tag: $(tag)"
-        echo "Namespace: ${{ parameters.environment }}"
-        echo "Manifest Path: $(Build.SourcesDirectory)/manifests/deployment.yaml"
-      displayName: 'Debug Variables'
-
-    # Debugging: Print the content of the Kubernetes manifest file
-    - script: |
-        echo "Kubernetes Manifest File Content:"
+        sed -i 's|$(APP_NAME)|$(Build.Repository.Name)|g' $(Build.SourcesDirectory)/manifests/deployment.yaml
+        sed -i 's|$(APP_NAME)|$(Build.Repository.Name)|g' $(Build.SourcesDirectory)/manifests/service.yaml
+        echo "=== Debug: Deployment YAML ==="
         cat $(Build.SourcesDirectory)/manifests/deployment.yaml
-      displayName: 'Show Manifest File'
+      displayName: 'Replace Variables in Manifest & Debug'
+
+    # Debugging Step: Verify Kubernetes Permissions
+    - script: |
+        kubectl auth can-i get deployments --namespace=${{ parameters.environment }} --as=system:serviceaccount:default:$(K8S_SERVICE_ACCOUNT)
+      displayName: 'Check Kubernetes Permissions'
 
     - task: KubernetesManifest@1
       displayName: Deploy to AKS
@@ -80,14 +82,8 @@ stages:
         namespace: "${{ parameters.environment }}"
         manifests: |
           $(Build.SourcesDirectory)/manifests/deployment.yaml
+          $(Build.SourcesDirectory)/manifests/service.yaml
         imagePullSecrets: 'acrpull'
-        overrides: |
-          spec:
-            template:
-              spec:
-                containers:
-                - name: $(APP_NAME)
-                  image: "$(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY):$(tag)"
-                  env:
-                  - name: APP_ENV
-                    value: "${{ parameters.environment }}"
+        containers: |
+          $(APP_NAME)=$(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY):$(tag)
+        valueFile: $(Build.SourcesDirectory)/manifests/values.yaml
