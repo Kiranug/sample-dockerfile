@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: $(APP_NAME)-deployment
+  name: myapp-deployment
   labels:
-    app: $(APP_NAME)
+    app: myapp
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: $(APP_NAME)
+      app: myapp
   template:
     metadata:
       labels:
-        app: $(APP_NAME)
+        app: myapp
     spec:
       containers:
-        - name: $(APP_NAME)
+        - name: myapp
           image: "$(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY):$(tag)"
           imagePullPolicy: Always
           env:
@@ -34,10 +34,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: $(APP_NAME)-service
+  name: myapp-service
 spec:
   selector:
-    app: $(APP_NAME)
+    app: myapp
   ports:
     - protocol: TCP
       port: 80
