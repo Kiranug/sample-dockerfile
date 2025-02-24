@@ -83,8 +83,7 @@ stages:
 
     # Debugging Step: Ensure Variables Are Replaced in the Manifest
     - script: |
-        sed -i "s,{{APP_NAME}},${{APP_NAME}}," $(Build.SourcesDirectory)/manifests/deployment.yaml
-        #sed -i 's|$(APP_NAME)|$(APP_NAME)|g' $(Build.SourcesDirectory)/manifests/deployment.yaml
+        sed -i "s,{{APP_NAME}},$(APP_NAME)," $(Build.SourcesDirectory)/manifests/deployment.yaml
         echo "=== Debug: Deployment YAML ==="
         cat $(Build.SourcesDirectory)/manifests/deployment.yaml
       displayName: 'Replace Variables in Manifest & Debug'
