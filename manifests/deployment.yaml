@@ -2,16 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{APP_NAME}}
-  annotations:
-    deployment.kubernetes.io/revision: "1"
+  namespace: {{ENVIRONMENT}}
 spec:
-  replicas: 3
-  revisionHistoryLimit: 10
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: 1
+  replicas: 2
   selector:
     matchLabels:
       app: {{APP_NAME}}
@@ -23,23 +16,12 @@ spec:
       imagePullSecrets:
         - name: acrpull-secretnew  # Reference the secret created
       containers:
-      - name: {{APP_NAME}}
+      - name: my-app-container
         image: APP_IMAGE_NAME
         ports:
         - containerPort: 8080
         env:
-        - name: ENVIRONMENT
-          value: {{DEPLOY_ENV}}
-        resources:
-          requests:
-            cpu: "100m"
-            memory: "128Mi"
-          limits:
-            cpu: "200m"
-            memory: "256Mi"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 5
-          periodSeconds: 10
+        - name: APP_ENV
+          value: "{{ENVIRONMENT}}"
+        - name: LOG_LEVEL
+          value: "{{LOG_LEVEL}}"
