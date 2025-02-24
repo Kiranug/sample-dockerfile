@@ -40,26 +40,28 @@ stages:
       displayName: Build and Push Docker Image
       inputs:
         command: buildAndPush
-        repository: $(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY)  # ACR registry + image name
+        repository: $(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY)  # Using CONTAINER_REGISTRY variable
         dockerfile: $(dockerfilePath)
-        containerRegistry: $(dockerRegistryServiceConnection)  # Use the service connection name directly
+        containerRegistry: $(dockerRegistryServiceConnection)  # Service connection name
         tags: |
           $(tag)
+
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Kubernetes Manifests'
       inputs:
         PathtoPublish: '$(manifestsPath)'
         ArtifactName: 'kube-manifest'
         publishLocation: 'Container'
+
     - task: Bash@3
       displayName: Replace placeholders in deployment.yaml
       inputs:
         targetType: 'inline'
         script: |
          echo "APP_NAME is: $(APP_NAME)"
-         sed -i "s,{{APP_NAME}},${APP_NAME},g" $(Build.SourcesDirectory)/manifests/deployment.yaml
-         sed -i "s,{{ENVIRONMENT}},${ENVIRONMENT},g" $(Build.SourcesDirectory)/manifests/deployment.yaml
-         sed -i "s,APP_IMAGE_NAME,${ACR_NAME}.azurecr.io/${APP_NAME}:${$(tag)},g" $(Build.SourcesDirectory)/manifests/deployment.yaml
+         sed -i "s|{{APP_NAME}}|$(APP_NAME)|g" $(Build.SourcesDirectory)/manifests/deployment.yaml
+         sed -i "s|{{ENVIRONMENT}}|$(ENVIRONMENT)|g" $(Build.SourcesDirectory)/manifests/deployment.yaml
+         sed -i "s|APP_IMAGE_NAME|$(CONTAINER_REGISTRY)/$(APP_NAME):$(tag)|g" $(Build.SourcesDirectory)/manifests/deployment.yaml
 
     - task: Bash@3
       displayName: Debug Deployment YAML deployment.yaml
@@ -67,7 +69,6 @@ stages:
         targetType: 'inline'
         script: |
          cat $(Build.SourcesDirectory)/manifests/deployment.yaml
-
 
 - stage: DeployToAKS
   displayName: Deploy to AKS (${{ parameters.environment }})
@@ -93,12 +94,11 @@ stages:
       inputs:
         action: 'deploy'
         connectionType: 'kubernetesServiceConnection'
-        kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)  # From variable group
-        namespace: $(ENVIRONMENT)  # Use the environment variable instead of hardcoded 'dev'
+        kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)  
+        namespace: $(ENVIRONMENT)  
         manifests: |
           $(Build.SourcesDirectory)/manifests/deployment.yaml
-        imagePullSecrets: 'acrpullapp1'  # If needed, you can use ACR pull secrets here
-        # Remove the containers field here, as it's already replaced in deployment.yaml
+        imagePullSecrets: 'acrpullapp1'
         overrides: |
           spec:
             template:
@@ -107,6 +107,6 @@ stages:
                 - name: my-app-container
                   env:
                   - name: APP_ENV
-                    value: "$(ENVIRONMENT)"   # From variable group
+                    value: "$(ENVIRONMENT)"
                   - name: LOG_LEVEL
-                    value: "$(LOG_LEVEL)" # From variable group
+                    value: "$(LOG_LEVEL)"
