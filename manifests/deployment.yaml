@@ -1,21 +1,45 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: myappmulti  # Ensure this variable is properly replaced
+  name: $(APP_NAME)-deployment
   labels:
-    app: {{APP_NAME}}
+    app: $(APP_NAME)
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: {{APP_NAME}}
+      app: $(APP_NAME)
   template:
     metadata:
       labels:
-        app: {{APP_NAME}}
+        app: $(APP_NAME)
     spec:
       containers:
-      - name: {{APP_NAME}}
-        image: APP_IMAGE_NAME
-        ports:
-        - containerPort: 8080
+        - name: $(APP_NAME)
+          image: "$(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY):$(tag)"
+          imagePullPolicy: Always
+          env:
+            - name: APP_ENV
+              value: "${{ parameters.environment }}"
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: $(APP_NAME)-service
+spec:
+  selector:
+    app: $(APP_NAME)
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
