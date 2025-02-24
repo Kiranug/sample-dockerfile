@@ -1,47 +1,45 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: myapp
-  labels:
-    app: myapp
+  name: {{APP_NAME}}
+  annotations:
+    deployment.kubernetes.io/revision: "1"
 spec:
-  replicas: 2
+  replicas: 3
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
   selector:
     matchLabels:
-      app: myapp
+      app: {{APP_NAME}}
   template:
     metadata:
       labels:
-        app: myapp
+        app: {{APP_NAME}}
     spec:
+      imagePullSecrets:
+        - name: acrpull-secretnew
       containers:
-        - name: myapp
-          image: myregistry.azurecr.io/myapp:$(IMAGE_TAG)
-          ports:
-            - containerPort: 3000
-          envFrom:
-            - configMapRef:
-                name: myapp-configmap
-            - secretRef:
-                name: myapp-secret
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: myapp-configmap
-data:
-  ENV: "$(ENVIRONMENT)"
-  API_URL: "$(API_URL)"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: myapp-service
-spec:
-  selector:
-    app: myapp
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 3000
-  type: LoadBalancer
+      - name: {{APP_NAME}}
+        image: APP_IMAGE_NAME
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ENVIRONMENT
+          value: {{DEPLOY_ENV}}
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
