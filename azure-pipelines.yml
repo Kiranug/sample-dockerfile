@@ -60,7 +60,7 @@ stages:
       inputs:
         action: 'deploy'
         connectionType: 'kubernetesServiceConnection'
-        kubernetesServiceConnection: myaksworkid
+        kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)
         namespace: "${{ parameters.environment }}"
         manifests: |
           $(Build.SourcesDirectory)/manifests/deployment.yaml
