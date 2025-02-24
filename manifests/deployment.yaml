@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: $(APP_NAME)-deployment
   labels:
-    app: myapp
+    app: $(APP_NAME)
 spec:
   replicas: 2
   selector:
@@ -30,6 +30,8 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "500m"
+      imagePullSecrets:
+        - name: acrpull  # Secret for pulling images from Azure Container Registry (ACR)
 ---
 apiVersion: v1
 kind: Service
@@ -42,4 +44,4 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 80
-  type: LoadBalancer
+  type: LoadBalancer  # This creates a public IP for the service
