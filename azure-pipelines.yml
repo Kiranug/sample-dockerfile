@@ -14,7 +14,7 @@ parameters:
 variables:
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
-  APP_NAME: '$(Build.Repository.Name)'  # App name same as repo name
+  APP_NAME: 'mydevapp'  # App name same as repo name
   manifestsPath: '$(Build.SourcesDirectory)/manifests/'
   IMAGE_REPOSITORY: '$(Build.Repository.Name)'
   RESOURCE_GROUP: 'spoke1-rg'  # Update with your AKS resource group
