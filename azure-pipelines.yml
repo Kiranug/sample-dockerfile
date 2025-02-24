@@ -93,10 +93,10 @@ stages:
         action: 'deploy'
         connectionType: 'kubernetesServiceConnection'
         kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)  # From variable group
-        namespace: $(NAMESPACE)  # From variable group
+        namespace: 'dev'  # From variable group
         manifests: |
           $(Build.SourcesDirectory)/manifests/deployment.yaml
-          $(Build.SourcesDirectory)/manifests/services.msc
+          $(Build.SourcesDirectory)/manifests/services.yaml
         containers: '$(CONTAINER_REGISTRY)/$(IMAGE_REPOSITORY):$(tag)'
         imagePullSecrets: 'acrpullapp1'
         overrides: |
