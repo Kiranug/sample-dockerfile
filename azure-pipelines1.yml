@@ -28,9 +28,7 @@ variables:
   - name: tag
     value: '$(Build.BuildId)'
   - name: IMAGE_REPOSITORY
-    value: '$(Build.Repository.Name)'
-  - name: FINAL_IMAGE
-    value: $[coalesce(variables['existingImage'], format('{0}:{1}', variables['IMAGE_REPOSITORY'], variables['tag']))]
+    value: 'aksdevopsacr.azurecr.io/kiranug/sample-dockerfile'
 
 stages:
 
@@ -53,10 +51,23 @@ stages:
 
 - stage: DeployToAKS
   displayName: Deploy to AKS (${{ parameters.environment }})
+  dependsOn: []
   jobs:
   - job: Deploy
     displayName: Deploy to AKS
     steps:
+
+    - ${{ if eq(parameters.useExistingImage, true) }}:
+      - script: |
+          echo "Using Existing Image: ${{ parameters.existingImage }}"
+          echo "##vso[task.setvariable variable=FINAL_IMAGE]${{ parameters.existingImage }}"
+        displayName: 'Set Image Variable (Existing Image)'
+
+    - ${{ if eq(parameters.useExistingImage, false) }}:
+      - script: |
+          echo "Using Newly Built Image: $(IMAGE_REPOSITORY):$(tag)"
+          echo "##vso[task.setvariable variable=FINAL_IMAGE]$(IMAGE_REPOSITORY):$(tag)"
+        displayName: 'Set Image Variable (New Build)'
 
     - script: |
         echo "Final Image: $(FINAL_IMAGE)"
@@ -70,3 +81,5 @@ stages:
         kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)  # Now fetched from variable group
         manifests: |
           $(Build.SourcesDirectory)/manifests/deployment.yaml
+        containers: |
+          $(FINAL_IMAGE)
