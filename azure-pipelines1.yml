@@ -1,0 +1,127 @@
+trigger: none
+
+parameters:
+  - name: environment
+    displayName: "Select Environment"
+    type: string
+    default: "dev"
+    values:
+      - dev
+      - qa
+      - uat
+      - prod
+
+  - name: APP_NAME
+    displayName: "Application Name"
+    type: string
+    default: "mydevapp"
+
+  - name: buildAndDeploy
+    displayName: "Do you want to build a new image?"
+    type: boolean
+    default: true
+
+  - name: existingImageTag
+    displayName: "Provide the existing image tag (if using existing image)"
+    type: string
+    default: "latest"
+    values:
+      - latest
+      - custom
+
+variables:
+  dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
+  tag: '$(Build.BuildId)'
+  manifestsPath: '$(Build.SourcesDirectory)/manifests/'
+  IMAGE_REPOSITORY: '$(Build.Repository.Name)'
+  RESOURCE_GROUP: 'spoke1-rg'  
+  CLUSTER_NAME: 'dev-aks-cluster'  
+  AZURE_SUBSCRIPTION: 'my-azure-service-connection'  
+  K8S_SERVICE_CONNECTION: 'myakscred'  
+  APP_NAME: ${{ parameters.APP_NAME }}
+
+stages:
+
+- stage: BuildAndPush
+  displayName: Build and Push Docker Image
+  condition: eq(${{ parameters.buildAndDeploy }}, true)
+  jobs:
+  - job: Build
+    displayName: Build and Push Docker Image to ACR
+    pool: default
+    steps:
+    - task: Docker@2
+      displayName: Build and Push Docker Image
+      inputs:
+        command: buildAndPush
+        repository: $(IMAGE_REPOSITORY)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(tag)
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Kubernetes Manifests'
+      inputs:
+        PathtoPublish: '$(manifestsPath)'
+        ArtifactName: 'kube-manifest'
+        publishLocation: 'Container'
+
+- stage: DeployToAKS
+  displayName: Deploy to AKS (${{ parameters.environment }})
+  dependsOn: []
+  jobs:
+  - job: Deploy
+    displayName: Deploy to AKS using Kubernetes Manifests
+    pool: default
+    steps:
+
+    # Azure Login and Get AKS Credentials Using Service Connection
+    - task: AzureCLI@2
+      displayName: 'Login to Azure and Get AKS Credentials'
+      inputs:
+        azureSubscription: '$(AZURE_SUBSCRIPTION)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          echo "Logging into Azure..."
+          az aks get-credentials --resource-group $(RESOURCE_GROUP) --name $(CLUSTER_NAME) --overwrite-existing
+          kubectl config current-context
+          kubectl get nodes -o wide
+
+    - task: DownloadBuildArtifacts@0
+      displayName: 'Download Kubernetes Manifests'
+      inputs:
+        artifactName: 'kube-manifest'
+        downloadPath: '$(Build.SourcesDirectory)/manifests/'
+
+    # Determine Image Tag Based on User Input
+    - script: |
+        if [ "${{ parameters.buildAndDeploy }}" = "true" ]; then
+          IMAGE_TAG="$(tag)"
+        else
+          IMAGE_TAG="${{ parameters.existingImageTag }}"
+        fi
+        echo "Using Image Tag: $IMAGE_TAG"
+        echo "##vso[task.setvariable variable=IMAGE_TAG]$IMAGE_TAG"
+      displayName: 'Set Image Tag Variable'
+
+    # Replace Variables in Kubernetes Manifest
+    - script: |
+        sed -i "s,{{APP_NAME}},$(APP_NAME)," $(Build.SourcesDirectory)/manifests/deployment.yaml
+        sed -i "s,{{CONTAINER_REGISTRY}},$(CONTAINER_REGISTRY)," $(Build.SourcesDirectory)/manifests/deployment.yaml
+        sed -i "s,{{IMAGE_REPOSITORY}},$(IMAGE_REPOSITORY)," $(Build.SourcesDirectory)/manifests/deployment.yaml
+        sed -i "s,{{tag}},$(IMAGE_TAG)," $(Build.SourcesDirectory)/manifests/deployment.yaml
+        echo "=== Debug: Deployment YAML ==="
+        cat $(Build.SourcesDirectory)/manifests/deployment.yaml
+      displayName: 'Replace Variables in Manifest & Debug'
+
+    # Deploy to AKS
+    - task: KubernetesManifest@1
+      displayName: Deploy to AKS using serviceaccount:dev:default
+      inputs:
+        action: 'deploy'
+        connectionType: 'kubernetesServiceConnection'
+        kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)
+        manifests: |
+          $(Build.SourcesDirectory)/manifests/deployment.yaml
