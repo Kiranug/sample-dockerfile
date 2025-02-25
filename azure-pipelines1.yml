@@ -31,7 +31,10 @@ variables:
     value: 'aksdevopsacr'
   - name: APP_NAME
     value: 'myappdevtest'
-
+  - name: CONTAINER_REGISTRY
+    value: 'mycontainerregistry'  # Add the container registry name here
+  - name: FINAL_IMAGE
+    value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY):$(tag)'
 
 stages:
 
@@ -84,15 +87,18 @@ stages:
       displayName: 'Verify Image Name'
 
     - script: |
-        sed -i 's/{{APP_NAME}}/your-app-name/g' $(Build.SourcesDirectory)/manifests/appdeploy.yaml
-      displayName: 'Replace APP_NAME in appdeploy.yaml'
+        sed -i 's/{{APP_NAME}}/$(APP_NAME)/g' $(Build.SourcesDirectory)/manifests/appdeploy.yaml
+        sed -i 's/{{CONTAINER_REGISTRY}}/$(CONTAINER_REGISTRY)/g' $(Build.SourcesDirectory)/manifests/appdeploy.yaml
+        sed -i 's/{{IMAGE_REPOSITORY}}/$(IMAGE_REPOSITORY)/g' $(Build.SourcesDirectory)/manifests/appdeploy.yaml
+        sed -i 's/{{tag}}/$(tag)/g' $(Build.SourcesDirectory)/manifests/appdeploy.yaml
+      displayName: 'Replace placeholders in appdeploy.yaml'
 
     - task: KubernetesManifest@1
       displayName: Deploy to AKS
       inputs:
         action: 'deploy'
         connectionType: 'kubernetesServiceConnection'
-        kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)  # Now fetched from variable group
+        kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)
         manifests: |
           $(Build.SourcesDirectory)/manifests/appdeploy.yaml
         containers: |
