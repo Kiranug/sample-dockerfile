@@ -1,3 +1,4 @@
+#fully working build and deploy to aks and if existing is checked and deploy existing image which user provide
 trigger: none
 name: mypipeline-$(Build.SourceBranchName)
 parameters:
