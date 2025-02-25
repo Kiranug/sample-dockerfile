@@ -117,4 +117,3 @@ stages:
         kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)  # Kubernetes Service Connection name'  # Use environment parameter to set the namespace (dev, qa, etc.)
         manifests: |
           $(Build.SourcesDirectory)/manifests/deployment.yaml
-        imagePullSecrets: 'acrpull'  # Use image pull secret as necessary
