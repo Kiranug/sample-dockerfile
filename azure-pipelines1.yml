@@ -32,7 +32,7 @@ variables:
   - name: APP_NAME
     value: 'myappdevtest'
   - name: CONTAINER_REGISTRY
-    value: 'mycontainerregistry'  # Add the container registry name here
+    value: 'aksdevopsacr'  # Add the container registry name here
   - name: FINAL_IMAGE
     value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY):$(tag)'
 
