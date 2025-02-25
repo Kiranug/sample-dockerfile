@@ -1,5 +1,5 @@
 trigger: none
-
+name: mypipeline-$(Build.SourceBranchName)
 parameters:
   - name: environment
     displayName: "Select Environment"
