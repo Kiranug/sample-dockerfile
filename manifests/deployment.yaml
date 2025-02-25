@@ -23,6 +23,8 @@ spec:
               value: {{APP_NAME}}
           ports:
             - containerPort: 80
+      imagePullSecrets:
+        - name: mynewacrpullsecret
 ---
 
 apiVersion: v1
