@@ -1,3 +1,4 @@
+# plain build and deploy app in aks 
 trigger: none
 
 parameters:
