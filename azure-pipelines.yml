@@ -10,11 +10,16 @@ parameters:
       - qa
       - uat
       - prod
-
+        
+  - name: APP_NAME
+    displayName: "Application Name"
+    type: string
+    default: "$(Build.Repository.Name)"  # Default to repo name
+      
 variables:
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
-  APP_NAME: '$(Build.Repository.Name)'  # App name same as repo name
+  APP_NAME: ${{ parameters.APP_NAME }}  # App name same as repo name
   manifestsPath: '$(Build.SourcesDirectory)/manifests/'
   IMAGE_REPOSITORY: '$(Build.Repository.Name)'
   RESOURCE_GROUP: 'spoke1-rg'  # Update with your AKS resource group
@@ -94,7 +99,7 @@ stages:
 
     # Debugging Step: Ensure Variables Are Replaced in the Manifest
     - script: |
-        sed -i "s,{{APP_NAME}},$(echo $(APP_NAME) | tr '[:upper:]' '[:lower:]' | tr -d '/-')," $(Build.SourcesDirectory)/manifests/deployment.yaml
+         sed -i "s,{{APP_NAME}},$(echo $(APP_NAME) | tr '[:upper:]' '[:lower:]')," $(Build.SourcesDirectory)/manifests/deployment.yaml
         sed -i "s,{{CONTAINER_REGISTRY}},$(CONTAINER_REGISTRY)," $(Build.SourcesDirectory)/manifests/deployment.yaml
         sed -i "s,{{IMAGE_REPOSITORY}},$(echo $(IMAGE_REPOSITORY) | tr '[:upper:]' '[:lower:]')," $(Build.SourcesDirectory)/manifests/deployment.yaml
         sed -i "s,{{tag}},$(tag)," $(Build.SourcesDirectory)/manifests/deployment.yaml
