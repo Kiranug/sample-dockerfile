@@ -87,10 +87,8 @@ stages:
       displayName: 'Verify Image Name'
 
     - script: |
-        sed -i 's/{{APP_NAME}}/$(APP_NAME)/g' $(Build.SourcesDirectory)/manifests/appdeploy.yaml
-        sed -i 's/{{FINAL_IMAGE}}/$(FINAL_IMAGE)/g' $(Build.SourcesDirectory)/manifests/appdeploy.yaml
-      #  sed -i 's/{{IMAGE_REPOSITORY}}/$(IMAGE_REPOSITORY)/g' $(Build.SourcesDirectory)/manifests/appdeploy.yaml
-      # sed -i 's/{{tag}}/$(tag)/g' $(Build.SourcesDirectory)/manifests/appdeploy.yaml
+        sed -i "s,{{APP_NAME}},$(APP_NAME)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
+        sed -i "s,{{FINAL_IMAGE}},$(FINAL_IMAGE)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
       displayName: 'Replace placeholders in appdeploy.yaml'
 
     - task: KubernetesManifest@1
