@@ -1,0 +1,150 @@
+# build and deploy to aks and skil build if existing option is checked, user need to provide image name 
+trigger: none
+name: mypipeline-$(Build.SourceBranchName)
+parameters:
+  - name: environment
+    displayName: "Select Environment"
+    type: string
+    default: "dev"
+    values:
+      - dev
+      - qa
+      - uat
+      - prod
+
+  - name: useExistingImage
+    displayName: "Do you want to use an existing image?"
+    type: boolean
+    default: false
+
+  - name: existingImage
+    displayName: "Provide the full image name (if using an existing image)"
+    type: string
+    default: ""  # Empty default value makes it optional
+
+variables:
+  - ${{ if eq(parameters.environment, 'dev') }}:
+      - group: dev-variables
+      - name: dockerfilePath
+        value: '$(Build.SourcesDirectory)/Dockerfile'
+      - name: tag
+        value: '$(Build.BuildId)'
+      - name: IMAGE_REPOSITORY
+        value: 'aksdevopsacr'
+      - name: APP_NAME
+        value: 'myappdevtest2'
+      - name: CONTAINER_REGISTRY
+        value: 'kiranacrdevops'  # Dev environment container registry
+      - name: FINAL_IMAGE
+        value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY):$(tag)'
+
+  - ${{ if eq(parameters.environment, 'qa') }}:
+      - group: qa-variables
+      - name: dockerfilePath
+        value: '$(Build.SourcesDirectory)/Dockerfile'
+      - name: tag
+        value: '$(Build.BuildId)'
+      - name: IMAGE_REPOSITORY
+        value: 'aksqaacr'
+      - name: APP_NAME
+        value: 'myappqa'
+      - name: CONTAINER_REGISTRY
+        value: 'kiranacraq'  # QA environment container registry
+      - name: FINAL_IMAGE
+        value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY):$(tag)'
+
+  - ${{ if eq(parameters.environment, 'uat') }}:
+      - group: uat-variables
+      - name: dockerfilePath
+        value: '$(Build.SourcesDirectory)/Dockerfile'
+      - name: tag
+        value: '$(Build.BuildId)'
+      - name: IMAGE_REPOSITORY
+        value: 'aksuatacr'
+      - name: APP_NAME
+        value: 'myappuat'
+      - name: CONTAINER_REGISTRY
+        value: 'kiranacruat'  # UAT environment container registry
+      - name: FINAL_IMAGE
+        value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY):$(tag)'
+
+  - ${{ if eq(parameters.environment, 'prod') }}:
+      - group: prod-variables
+      - name: dockerfilePath
+        value: '$(Build.SourcesDirectory)/Dockerfile'
+      - name: tag
+        value: '$(Build.BuildId)'
+      - name: IMAGE_REPOSITORY
+        value: 'aksprodacr'
+      - name: APP_NAME
+        value: 'myappprod'
+      - name: CONTAINER_REGISTRY
+        value: 'kiranacrprod'  # Prod environment container registry
+      - name: FINAL_IMAGE
+        value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY):$(tag)'
+
+stages:
+
+- stage: BuildAndPush
+  displayName: Build and Push Docker Image
+  condition: always()  # Always run this stage, regardless of useExistingImage
+  pool: default
+  jobs:
+  - job: Build
+    displayName: Build and Push Docker Image to ACR
+    steps:
+    - task: Docker@2
+      displayName: Build and Push Docker Image
+      inputs:
+        command: buildAndPush
+        repository: $(IMAGE_REPOSITORY)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(dockerRegistryServiceConnection)  # Now fetched from variable group
+        tags: |
+          $(tag)
+
+- stage: DeployToAKS
+  displayName: Deploy to AKS (${{ parameters.environment }})
+  pool: default
+  dependsOn: []
+  jobs:
+  - job: Deploy
+    displayName: Deploy to AKS
+    steps:
+
+    - script: |
+        echo "Displaying Kubernetes Manifest File:"
+        cat $(Build.SourcesDirectory)/manifests/appdeploy.yaml
+      displayName: 'Cat Kubernetes Manifest File'
+    
+    - ${{ if eq(parameters.useExistingImage, true) }}:
+      - script: |
+          echo "Using Existing Image: ${{ parameters.existingImage }}"
+          echo "##vso[task.setvariable variable=FINAL_IMAGE]${{ parameters.existingImage }}"
+        displayName: 'Set Image Variable (Existing Image)'
+
+    - ${{ if eq(parameters.useExistingImage, false) }}:
+      - script: |
+          echo "Using Newly Built Image: $(FINAL_IMAGE)"
+          echo "##vso[task.setvariable variable=FINAL_IMAGE]$(FINAL_IMAGE)"
+        displayName: 'Set Image Variable (New Build)'
+
+    - script: |
+        echo "Final Image: $(FINAL_IMAGE)"
+      displayName: 'Verify Image Name'
+
+    - script: |
+        sed -i "s,{{APP_NAME}},$(APP_NAME)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
+        sed -i "s,{{FINAL_IMAGE}},$(FINAL_IMAGE)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
+      displayName: 'Replace placeholders in appdeploy.yaml'
+
+    - task: KubernetesManifest@1
+      displayName: Deploy to AKS
+      inputs:
+        action: 'deploy'
+        connectionType: 'kubernetesServiceConnection'
+        kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)
+        manifests: |
+          $(Build.SourcesDirectory)/manifests/appdeploy.yaml
+        containers: |
+          $(FINAL_IMAGE)
