@@ -22,7 +22,9 @@ spec:
             - name: APP_ENV
               value: "{{APP_NAME}}"
           ports:
-            - containerPort: 80
+            - protocol: TCP
+              port: 80         # Expose externally on port 80
+              targetPort: 3000  # Forward traffic to the container's port 3000
       imagePullSecrets:
         - name: mynewacrpullsecret
 ---
