@@ -55,6 +55,7 @@ stages:
 
 - stage: DeployToAKS
   displayName: Deploy to AKS (${{ parameters.environment }})
+  pool: default
   dependsOn: []
   jobs:
   - job: Deploy
