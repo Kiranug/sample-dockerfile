@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: "{{APP_NAME}}"
-          image: "{{CONTAINER_REGISTRY}}.azurecr.io/{{IMAGE_REPOSITORY}}:{{tag}}"  # Reference to the image with the tag
+          image: "{{FINAL_IMAGE}}"  # Reference to the image with the tag
           imagePullPolicy: Always
           env:
             - name: APP_ENV
