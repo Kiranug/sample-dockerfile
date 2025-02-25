@@ -22,9 +22,7 @@ spec:
             - name: APP_ENV
               value: "{{APP_NAME}}"
           ports:
-            - protocol: TCP
-              port: 80         # Expose externally on port 80
-              targetPort: 3000  # Forward traffic to the container's port 3000
+            - containerPort: 3000  # Container will listen on port 3000
       imagePullSecrets:
         - name: mynewacrpullsecret
 ---
@@ -37,6 +35,6 @@ spec:
     app: "{{APP_NAME}}"
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 80
+      port: 80           # Expose the service externally on port 80
+      targetPort: 3000    # Forward traffic to container's port 3000
   type: LoadBalancer
