@@ -1,41 +1,40 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{APP_NAME}}-deployment
+  name: "{{APP_NAME}}-deployment"
   labels:
-    app: {{APP_NAME}}
+    app: "{{APP_NAME}}"
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: {{APP_NAME}}
+      app: "{{APP_NAME}}"
   template:
     metadata:
       labels:
-        app: {{APP_NAME}}
+        app: "{{APP_NAME}}"
     spec:
       containers:
-        - name: {{APP_NAME}}  # Fixed the missing closing quote
-          image: "{{CONTAINER_REGISTRY}}.azurecr.io/{{IMAGE_REPOSITORY}}:{{tag}}"
+        - name: "{{APP_NAME}}"
+          image: "{{CONTAINER_REGISTRY}}.azurecr.io/{{IMAGE_REPOSITORY}}:{{TAG}}"
           imagePullPolicy: Always
           env:
             - name: APP_ENV
-              value: {{APP_NAME}}
+              value: "{{APP_NAME}}"
           ports:
             - containerPort: 80
       imagePullSecrets:
         - name: mynewacrpullsecret
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{APP_NAME}}-service
+  name: "{{APP_NAME}}-service"
 spec:
   selector:
-    app: {{APP_NAME}}
+    app: "{{APP_NAME}}"
   ports:
     - protocol: TCP
       port: 80
       targetPort: 80
-  type: LoadBalancer  # This creates a public IP for the service
+  type: LoadBalancer
