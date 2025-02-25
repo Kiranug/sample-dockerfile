@@ -35,6 +35,7 @@ stages:
 - stage: BuildAndPush
   displayName: Build and Push Docker Image
   condition: eq('${{ parameters.useExistingImage }}', false)
+  pool: default
   jobs:
   - job: Build
     displayName: Build and Push Docker Image to ACR
@@ -51,6 +52,7 @@ stages:
 
 - stage: DeployToAKS
   displayName: Deploy to AKS (${{ parameters.environment }})
+  pool: default
   dependsOn: []
   jobs:
   - job: Deploy
