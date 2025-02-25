@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{APP_NAME}}-deployment"
+  labels:
+    app: "{{APP_NAME}}"
+spec:
+  replicas: 2  # Number of pods to run
+  selector:
+    matchLabels:
+      app: "{{APP_NAME}}"
+  template:
+    metadata:
+      labels:
+        app: "{{APP_NAME}}"
+    spec:
+      containers:
+        - name: "{{APP_NAME}}"
+          image: "{{CONTAINER_REGISTRY}}.azurecr.io/{{IMAGE_REPOSITORY}}:{{tag}}"  # Reference to the image with the tag
+          imagePullPolicy: Always
+          env:
+            - name: APP_ENV
+              value: "{{APP_NAME}}"
+          ports:
+            - containerPort: 3000  # Container will listen on port 3000
+      imagePullSecrets:
+        - name: mynewacrpullsecret  # Secret to pull images from ACR (if needed)
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{APP_NAME}}-service"
+spec:
+  selector:
+    app: "{{APP_NAME}}"
+  ports:
+    - protocol: TCP
+      port: 80           # Expose the service externally on port 80
+      targetPort: 3000    # Forward traffic to the container's port 3000
+  type: LoadBalancer      # Expose the service with a public IP (can be LoadBalancer or ClusterIP depending on needs)
