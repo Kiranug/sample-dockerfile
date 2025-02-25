@@ -1,5 +1,5 @@
 trigger: none
-name: mypipeline2-$(Build.SourceBranchName)
+name: mypipeline-$(Build.SourceBranchName)
 parameters:
   - name: environment
     displayName: "Select Environment"
@@ -19,7 +19,7 @@ parameters:
   - name: existingImage
     displayName: "Provide the full image name (if using an existing image)"
     type: string
-    default: ""
+    default: ""  # Empty default value makes it optional
 
 variables:
   - group: dev-variables  # Linking the variable group
