@@ -1,23 +1,18 @@
-# Use official Node.js image as base (change as per your app)
+# Use official Node.js image as base
 FROM node:18
 
-# Set working directory inside the container
+# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json separately to leverage Docker caching
+# Copy package files and install dependencies
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install
 
-# Copy application files, including the app folder
+# Copy application files
 COPY . .
-
-# Set the working directory inside the app folder
-WORKDIR /app/app
 
 # Expose the application port
 EXPOSE 3000
 
 # Start the application
-CMD ["node", "index.js"]
+CMD ["node", "app/index.js"]
