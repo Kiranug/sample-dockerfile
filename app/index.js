@@ -1,4 +1,14 @@
-const express = require(‘express’)
-const app = express()
-app.get(‘/’, (req, res) => res.send(‘Hello World!’))
-app.listen(3000, () => console.log(‘Example app listening on port 3000!’))
+const express = require("express");
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Basic route
+app.get("/", (req, res) => {
+  res.send("Hello, World! This is a simple Node.js app.");
+});
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
