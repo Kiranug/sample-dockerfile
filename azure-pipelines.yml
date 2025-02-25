@@ -96,7 +96,7 @@ stages:
     - script: |
         sed -i "s,{{APP_NAME}},$(echo $(APP_NAME) | tr '[:upper:]' '[:lower:]' | tr -d '/-')," $(Build.SourcesDirectory)/manifests/deployment.yaml
         sed -i "s,{{CONTAINER_REGISTRY}},$(CONTAINER_REGISTRY)," $(Build.SourcesDirectory)/manifests/deployment.yaml
-        sed -i "s,{{IMAGE_REPOSITORY}},$(echo $(IMAGE_REPOSITORY) | tr '[:upper:]' '[:lower:]')," $(Build.SourcesDirectory)/manifests/deployment.yaml
+        sed -i "s,{{IMAGE_REPOSITORY}},$(echo $(IMAGE_REPOSITORY) | tr '[:upper:]' '[:lower:]' | tr -d '/-')," $(Build.SourcesDirectory)/manifests/deployment.yaml
         sed -i "s,{{tag}},$(tag)," $(Build.SourcesDirectory)/manifests/deployment.yaml
         echo "=== Debug: Deployment YAML ==="
         cat $(Build.SourcesDirectory)/manifests/deployment.yaml
