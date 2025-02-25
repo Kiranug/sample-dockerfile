@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: "{{APP_NAME}}"
-          image: "{{CONTAINER_REGISTRY}}.azurecr.io/{{IMAGE_REPOSITORY}}:{{TAG}}"
+          image: "{{CONTAINER_REGISTRY}}.azurecr.io/{{IMAGE_REPOSITORY}}:{{tag}}"
           imagePullPolicy: Always
           env:
             - name: APP_ENV
