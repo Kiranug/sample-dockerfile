@@ -64,7 +64,7 @@ stages:
 
     - script: |
         echo "Displaying Kubernetes Manifest File:"
-        cat $(Build.SourcesDirectory)/manifests/deployment.yaml
+        cat $(Build.SourcesDirectory)/manifests/appdeploy.yaml
       displayName: 'Cat Kubernetes Manifest File'
     
     - ${{ if eq(parameters.useExistingImage, true) }}:
@@ -83,6 +83,10 @@ stages:
         echo "Final Image: $(FINAL_IMAGE)"
       displayName: 'Verify Image Name'
 
+    - script: |
+        sed -i 's/{{APP_NAME}}/your-app-name/g' $(Build.SourcesDirectory)/manifests/appdeploy.yaml
+      displayName: 'Replace APP_NAME in appdeploy.yaml'
+
     - task: KubernetesManifest@1
       displayName: Deploy to AKS
       inputs:
@@ -90,6 +94,6 @@ stages:
         connectionType: 'kubernetesServiceConnection'
         kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)  # Now fetched from variable group
         manifests: |
-          $(Build.SourcesDirectory)/manifests/deployment.yaml
+          $(Build.SourcesDirectory)/manifests/appdeploy.yaml
         containers: |
           $(FINAL_IMAGE)
