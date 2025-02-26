@@ -11,6 +11,12 @@ parameters:
       - qa
       - uat
       - prod
+      
+  - name: APP_NAME
+    displayName: Provide Appication Name
+    default: "myappdevtest2"
+    type: string 
+
 
   - name: useExistingImage
     displayName: "Do you want to use an existing image?"
