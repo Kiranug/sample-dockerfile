@@ -29,14 +29,10 @@ variables:
         value: '$(Build.SourcesDirectory)/Dockerfile'
       - name: tag
         value: '$(Build.BuildId)'
-      - name: IMAGE_REPOSITORY
-        value: 'aksdevopsacr'
       - name: APP_NAME
-        value: 'myappdevtest2'
-      - name: CONTAINER_REGISTRY
-        value: 'kiranacrdevops'  # Dev environment container registry
+        value: '${{ parameters.APP_NAME }}'
       - name: FINAL_IMAGE
-        value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY):$(tag)'
+        value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY)${{ parameters.environment }}:$(tag)'
 
   - ${{ if eq(parameters.environment, 'qa') }}:
       - group: qa-variables
@@ -44,14 +40,10 @@ variables:
         value: '$(Build.SourcesDirectory)/Dockerfile'
       - name: tag
         value: '$(Build.BuildId)'
-      - name: IMAGE_REPOSITORY
-        value: 'aksqaacr'
       - name: APP_NAME
-        value: 'myappqa'
-      - name: CONTAINER_REGISTRY
-        value: 'kiranacraq'  # QA environment container registry
+        value: '${{ parameters.APP_NAME }}'
       - name: FINAL_IMAGE
-        value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY):$(tag)'
+        value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY)${{ parameters.environment }}:$(tag)'
 
   - ${{ if eq(parameters.environment, 'uat') }}:
       - group: uat-variables
@@ -59,14 +51,10 @@ variables:
         value: '$(Build.SourcesDirectory)/Dockerfile'
       - name: tag
         value: '$(Build.BuildId)'
-      - name: IMAGE_REPOSITORY
-        value: 'aksuatacr'
       - name: APP_NAME
-        value: 'myappuat'
-      - name: CONTAINER_REGISTRY
-        value: 'kiranacruat'  # UAT environment container registry
+        value: '${{ parameters.APP_NAME }}'
       - name: FINAL_IMAGE
-        value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY):$(tag)'
+        value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY)${{ parameters.environment }}:$(tag)'
 
   - ${{ if eq(parameters.environment, 'prod') }}:
       - group: prod-variables
@@ -74,14 +62,10 @@ variables:
         value: '$(Build.SourcesDirectory)/Dockerfile'
       - name: tag
         value: '$(Build.BuildId)'
-      - name: IMAGE_REPOSITORY
-        value: 'aksprodacr'
       - name: APP_NAME
-        value: 'myappprod'
-      - name: CONTAINER_REGISTRY
-        value: 'kiranacrprod'  # Prod environment container registry
+        value: '${{ parameters.APP_NAME }}'
       - name: FINAL_IMAGE
-        value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY):$(tag)'
+        value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY)${{ parameters.environment }}:$(tag)'
 
 stages:
 
@@ -97,7 +81,7 @@ stages:
       displayName: Build and Push Docker Image
       inputs:
         command: buildAndPush
-        repository: $(IMAGE_REPOSITORY)
+        repository: $(IMAGE_REPOSITORY)${{ parameters.environment }}
         dockerfile: $(dockerfilePath)
         containerRegistry: $(dockerRegistryServiceConnection)  # Now fetched from variable group
         tags: |
