@@ -1,6 +1,6 @@
 #fully working build and deploy to aks and if existing is checked and deploy existing image which user provide
 trigger: none
-name: mypipeline-$(Build.SourceBranchName)
+name: mypipeline22-$(Build.SourceBranchName)
 parameters:
   - name: environment
     displayName: "Select Environment"
@@ -28,12 +28,8 @@ variables:
     value: '$(Build.SourcesDirectory)/Dockerfile'
   - name: tag
     value: '$(Build.BuildId)'
-  - name: IMAGE_REPOSITORY
-    value: 'aksdevopsacr'
   - name: APP_NAME
     value: 'myappdevtest2'
-  - name: CONTAINER_REGISTRY
-    value: 'kiranacrdevops'  # Add the container registry name here
   - name: FINAL_IMAGE
     value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY):$(tag)'
 
