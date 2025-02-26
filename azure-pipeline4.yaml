@@ -1,6 +1,6 @@
 # build and deploy to aks and skil build if existing option is checked, user need to provide image name 
 trigger: none
-name: mypipeline-$(Build.SourceBranchName)
+name: mypipelineskip-$(Build.SourceBranchName)
 parameters:
   - name: environment
     displayName: "Select Environment"
