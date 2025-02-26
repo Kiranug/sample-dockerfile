@@ -11,6 +11,10 @@ parameters:
       - qa
       - uat
       - prod
+  - name: APP_NAME
+    displayName: Provide Appication Name
+    default: "myappdevtest2"
+    type: string 
 
   - name: useExistingImage
     displayName: "Do you want to use an existing image?"
@@ -29,7 +33,7 @@ variables:
   - name: tag
     value: '$(Build.BuildId)'
   - name: APP_NAME
-    value: 'myappdevtest2'
+    value: '${{ parameters.APP_NAME }}'
   - name: FINAL_IMAGE
     value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY):$(tag)'
 
