@@ -41,7 +41,7 @@ variables:
         value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY)${{ parameters.environment }}:$(tag)'
 
   - ${{ if eq(parameters.environment, 'qa') }}:
-      - group: qa-variables
+      - group: QA-variables
       - name: dockerfilePath
         value: '$(Build.SourcesDirectory)/Dockerfile'
       - name: tag
