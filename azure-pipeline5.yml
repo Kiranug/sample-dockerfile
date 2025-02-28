@@ -42,7 +42,7 @@ variables:
       - name: FINAL_IMAGE
         value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY)${{ parameters.environment }}:$(tag)'
       - name: K8S_SERVICE_CONNECTION
-        value: $(DEV_K8S_SERVICE_CONNECTION)  # Dev environment AKS connection
+        value: $(K8S_SERVICE_CONNECTION)  # Dev environment AKS connection
 
   - ${{ if eq(parameters.environment, 'qa') }}:
       - group: QA-variables
