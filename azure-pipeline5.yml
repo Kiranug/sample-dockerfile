@@ -1,6 +1,4 @@
 # build and deploy to aks and skil build if existing option is checked, user need to provide image name 
-# use different credentails for each environment
-# passsing varialbes as build argument to dockerfile
 trigger: none
 name: mypipelineskip-$(Build.SourceBranchName)
 parameters:
@@ -29,7 +27,7 @@ parameters:
     displayName: "Provide the full image name (if using an existing image)"
     type: string
     default: "Provide image name if use an existing image is check "  # Empty default value makes it optional
-
+    
 variables:
   - ${{ if eq(parameters.environment, 'dev') }}:
       - group: dev-variables
@@ -42,7 +40,7 @@ variables:
       - name: FINAL_IMAGE
         value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY)${{ parameters.environment }}:$(tag)'
       - name: K8S_SERVICE_CONNECTION
-        value: '$(K8S_SERVICE_CONNECTION)'  # Dev environment AKS connection
+        value: "myakscred"  # Dev environment AKS connection
 
   - ${{ if eq(parameters.environment, 'qa') }}:
       - group: QA-variables
@@ -55,7 +53,7 @@ variables:
       - name: FINAL_IMAGE
         value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY)${{ parameters.environment }}:$(tag)'
       - name: K8S_SERVICE_CONNECTION
-        value: '$(K8S_SERVICE_CONNECTION)'  # Dev environment AKS connection
+        value: "myakscred"  # Dev environment AKS connection
 
   - ${{ if eq(parameters.environment, 'uat') }}:
       - group: uat-variables
@@ -68,7 +66,7 @@ variables:
       - name: FINAL_IMAGE
         value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY)${{ parameters.environment }}:$(tag)'
       - name: K8S_SERVICE_CONNECTION
-        value: '$(K8S_SERVICE_CONNECTION)'  # Dev environment AKS connection
+        value: "myakscred"  # Dev environment AKS connection
 
   - ${{ if eq(parameters.environment, 'prod') }}:
       - group: prod-variables
@@ -81,7 +79,7 @@ variables:
       - name: FINAL_IMAGE
         value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY)${{ parameters.environment }}:$(tag)'
       - name: K8S_SERVICE_CONNECTION
-        value: '$(K8S_SERVICE_CONNECTION)'  # Dev environment AKS connection
+        value: "myakscred"  # Dev environment AKS connection
 
 stages:
 
@@ -106,7 +104,7 @@ stages:
           ENVIRONMENT_TEST=$(environmenttest)  # Pass the variable
 
 - stage: DeployToAKS
-  displayName: Deploy to AKS (${{ parameters.environment }})
+  displayName: Deploy to AKS (${{ parameters.environment }}) using $(K8S_SERVICE_CONNECTION)
   pool: default
   dependsOn: []
   jobs:
