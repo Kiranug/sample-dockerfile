@@ -26,7 +26,6 @@ parameters:
   - name: existingImage
     displayName: "Provide the full image name (if using an existing image)"
     type: string
-    default: ""  # Empty default value makes it optional
 
 variables:
   - ${{ if eq(parameters.environment, 'dev') }}:
