@@ -20,7 +20,7 @@ parameters:
 
   - name: useExistingImage
     displayName: "Do you want to use an existing image?"
-    type: string
+    type: boolean
     default: false
 
   - name: existingImage
