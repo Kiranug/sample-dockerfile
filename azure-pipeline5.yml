@@ -96,22 +96,23 @@ stages:
       displayName: 'Log useExistingImage Value'
         
     - task: AzureKeyVault@2
-      displayName: Azure Key Vault
+      displayName: 'Fetch Secrets from Azure Key Vault'
       inputs:
         azureSubscription: 'my-azure-service-connection'
         KeyVaultName: 'greenwashradarkeys'
-        SecretsFilter: '*'
+        SecretsFilter: '*'  # Fetch all secrets
         RunAsPreJob: false
-    
-    - task: CmdLine@2
-      displayName: Create file
-      inputs:
-       script: 'echo  $(dbuser-kk) > secret.txt'
+
+    - script: |
+        echo "$(dbuser-kk)" > $(Build.SourcesDirectory)/secret.txt  # Write the secret value to file
+        cat $(Build.SourcesDirectory)/secret.txt  # Display the contents of the file
+      displayName: 'Write Secret to File and Display'
+
     - task: CopyFiles@2
       displayName: Copy file
       inputs:
         Contents: secret.txt
-        targetFolder: '$(Build.ArtifactStagingDirectory)'
+        targetFolder: '$(Build.SourcesDirectory)'
 
     - task: Docker@2
       displayName: Build and Push Docker Image
