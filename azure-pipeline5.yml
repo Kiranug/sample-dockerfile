@@ -104,7 +104,7 @@ stages:
         RunAsPreJob: false
     
     - script: |
-        if [ -z "$(dbuser-kk)" ]; then
+        if [ -z "$(dbuser--kk)" ]; then
             echo "Secret is not set or failed to retrieve"
         else
             echo "Secret is successfully fetched"
@@ -112,7 +112,7 @@ stages:
       displayName: 'Check if Secret is Fetched'
 
     - script: |
-        echo "$(dbuser-kk)" > $(Build.SourcesDirectory)/secret.txt  # Write the secret value to file
+        echo "$(dbuser--kk)" > $(Build.SourcesDirectory)/secret.txt  # Write the secret value to file
         cat $(Build.SourcesDirectory)/secret.txt  # Display the contents of the file
       displayName: 'Write Secret to File and Display'
 
