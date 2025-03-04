@@ -83,6 +83,32 @@ variables:
 
 stages:
 
+
+- stage: Fetch_Secret_From_Azure_KeyVault
+  displayName: Fetch Secret from Azure Key Vault (${{ parameters.environment }}) using $(K8S_SERVICE_CONNECTION)
+  pool: default
+  dependsOn: []
+  jobs:
+  - job: Deploy
+    displayName: Fetch_Secret_From_Azure_KeyVault
+    steps:
+    - task: AzureCLI@2
+      displayName: 'Fetch Secret from Azure Key Vault'
+      inputs:
+        azureSubscription: "my-azure-service-connection"
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # Set variables
+          KEYVAULT_NAME= 'greenwashradarkeys'
+          SECRET_NAME="*"
+
+          # Fetch secret from Key Vault
+          SECRET_VALUE=$(az keyvault secret show --name 'dbuser--kk' --vault-name $KEYVAULT_NAME --query value -o tsv)
+
+          # Mask the secret and set it as a pipeline variable
+          echo "##vso[task.setvariable variable=MY_SECRET;issecret=true]$SECRET_VALUE"
+
 - stage: BuildAndPush
   displayName: Build and Push Docker Image
   condition: eq(${{ parameters.useExistingImage }}, false)  # 🛑 Skip if using existing image
@@ -101,7 +127,7 @@ stages:
         tags: |
           $(tag)
         buildArguments: |
-          ENVIRONMENT_TEST=$(environmenttest)  # Pass the variable
+          ENVIRONMENT_TEST=$(environmenttest)  # Pass the variable 
 
 - stage: DeployToAKS
   displayName: Deploy to AKS (${{ parameters.environment }}) using $(K8S_SERVICE_CONNECTION)
