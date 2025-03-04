@@ -102,10 +102,14 @@ stages:
         KeyVaultName: 'greenwashradarkeys'
         SecretsFilter: '*'  # Fetch all secrets
         RunAsPreJob: false
-
+    
     - script: |
-        echo "Secret value is: $(dbuser-kk)"
-      displayName: 'Display the Secret'
+        if [ -z "$(dbuser-kk)" ]; then
+            echo "Secret is not set or failed to retrieve"
+        else
+            echo "Secret is successfully fetched"
+        fi
+      displayName: 'Check if Secret is Fetched'
 
     - script: |
         echo "$(dbuser-kk)" > $(Build.SourcesDirectory)/secret.txt  # Write the secret value to file
@@ -163,6 +167,7 @@ stages:
     - script: |
         sed -i "s,{{APP_NAME}},$(APP_NAME)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
         sed -i "s,{{FINAL_IMAGE}},$(FINAL_IMAGE)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
+        sed -i "s,{{DB_USER}},$(dbuser-kk)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
       displayName: 'Replace placeholders in appdeploy.yaml'
     
     - script: |
