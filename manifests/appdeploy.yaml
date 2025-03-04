@@ -21,6 +21,8 @@ spec:
           env:
             - name: APP_ENV
               value: "{{APP_NAME}}"
+            - name: DB_USER
+              value: "{{DB_USER}}"
           ports:
             - containerPort: 3000  # Container will listen on port 3000
       imagePullSecrets:
