@@ -104,6 +104,10 @@ stages:
         RunAsPreJob: false
 
     - script: |
+        echo "Secret value is: $(dbuser-kk)"
+      displayName: 'Display the Secret'
+
+    - script: |
         echo "$(dbuser-kk)" > $(Build.SourcesDirectory)/secret.txt  # Write the secret value to file
         cat $(Build.SourcesDirectory)/secret.txt  # Display the contents of the file
       displayName: 'Write Secret to File and Display'
