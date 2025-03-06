@@ -97,18 +97,21 @@ stages:
 
     - ${{ if eq(parameters.useExistingImage, false) }}:
       - script: |
-          echo "Using Newly Built Image: $(FINAL_IMAGE)"
-          FINAL_IMAGE=`az acr repository show-tags --name $(CONTAINER_REGISTRY) --repository $(IMAGE_REPOSITORY) --orderby time_desc --top 1 | tr -d '[]\n" '`
-          echo "##vso[task.setvariable variable=FINAL_IMAGE]$(FINAL_IMAGE)"
+          echo "Fetching latest image from ACR..."
+          LATEST_TAG=$(az acr repository show-tags --name $(CONTAINER_REGISTRY) --repository $(IMAGE_REPOSITORY) --orderby time_desc --top 1 --query "[0]" -o tsv)
+          FINAL_IMAGE="$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY):$LATEST_TAG"
+          echo "Using Newly Built Image: $FINAL_IMAGE"
+          echo "##vso[task.setvariable variable=FINAL_IMAGE]$FINAL_IMAGE"
         displayName: 'Set Image Variable (New Build)'
+
 
     - script: |
         echo "Final Image: $(FINAL_IMAGE)"
       displayName: 'Verify Image Name'
 
     - script: |
-        sed -i "s,{{APP_NAME}},$(APP_NAME)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
-        sed -i "s,{{FINAL_IMAGE}},$(FINAL_IMAGE)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
+        sed -i "s,{{APP_NAME}},$(APP_NAME),g" $(Build.SourcesDirectory)/manifests/appdeploy.yaml
+        sed -i "s,{{FINAL_IMAGE}},$(FINAL_IMAGE),g" $(Build.SourcesDirectory)/manifests/appdeploy.yaml
         sed -i "s,{{DB_USER}},$(dbuser-kk)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
       displayName: 'Replace placeholders in appdeploy.yaml'
     
