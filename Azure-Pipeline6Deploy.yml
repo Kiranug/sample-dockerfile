@@ -37,8 +37,6 @@ variables:
         value: '$(Build.BuildId)'
       - name: APP_NAME
         value: '${{ parameters.APP_NAME }}'
-      - name: FINAL_IMAGE
-        value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY)${{ parameters.environment }}:$(tag)'
       - name: K8S_SERVICE_CONNECTION
         value: "myakscred"  # Dev environment AKS connection
 
@@ -50,8 +48,6 @@ variables:
         value: '$(Build.BuildId)'
       - name: APP_NAME
         value: '${{ parameters.APP_NAME }}'
-      - name: FINAL_IMAGE
-        value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY)${{ parameters.environment }}:$(tag)'
       - name: K8S_SERVICE_CONNECTION
         value: "myakscred"  # Dev environment AKS connection
 
@@ -63,8 +59,6 @@ variables:
         value: '$(Build.BuildId)'
       - name: APP_NAME
         value: '${{ parameters.APP_NAME }}'
-      - name: FINAL_IMAGE
-        value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY)${{ parameters.environment }}:$(tag)'
       - name: K8S_SERVICE_CONNECTION
         value: "myakscred"  # Dev environment AKS connection
 
