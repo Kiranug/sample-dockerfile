@@ -121,14 +121,3 @@ stages:
         echo "Displaying Kubernetes Manifest File after image replaced:"
         cat $(Build.SourcesDirectory)/manifests/appdeploy.yaml
       displayName: 'Cat Kubernetes Manifest File'
-
-    - task: KubernetesManifest@1
-      displayName: Deploy to AKS
-      inputs:
-        action: 'deploy'
-        connectionType: 'kubernetesServiceConnection'
-        kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)
-        manifests: |
-          $(Build.SourcesDirectory)/manifests/appdeploy.yaml
-        containers: |
-          $(FINAL_IMAGE)
