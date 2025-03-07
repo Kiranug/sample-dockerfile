@@ -1,0 +1,57 @@
+trigger: none
+name: Build-$(Build.SourceBranchName)-$(Build.BuildId)
+
+parameters:
+  - name: APP_NAME
+    displayName: "Provide Application Name"
+    default: "myappdevtest2"
+    type: string 
+
+  - name: useExistingImage
+    displayName: "Use Existing Image?"
+    type: boolean
+    default: false
+
+  - name: existingImage
+    displayName: "Existing Image Name"
+    type: string
+    default: ""
+
+variables:
+  - name: dockerfilePath
+    value: '$(Build.SourcesDirectory)/Dockerfile'
+  - name: tag
+    value: '$(Build.BuildId)'
+  - name: APP_NAME
+    value: '${{ parameters.APP_NAME }}'
+  - name: FINAL_IMAGE
+    value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY):$(tag)'
+
+stages:
+- stage: BuildAndPush
+  displayName: Build and Push Docker Image
+  condition: eq(${{ parameters.useExistingImage }}, false)  
+  pool: default
+  jobs:
+  - job: Build
+    displayName: Build and Push Docker Image to ACR
+    steps:
+    - task: Docker@2
+      displayName: Build and Push Docker Image
+      inputs:
+        command: buildAndPush
+        repository: $(IMAGE_REPOSITORY)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(tag)
+
+    - script: |
+        echo "IMAGE_NAME=$(FINAL_IMAGE)" > $(Build.ArtifactStagingDirectory)/image-metadata.txt
+      displayName: 'Save Image Metadata'
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Image Metadata
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)/image-metadata.txt'
+        artifactName: 'image-metadata'
