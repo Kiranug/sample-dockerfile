@@ -45,3 +45,9 @@ stages:
       inputs:
         pathToPublish: '$(Build.ArtifactStagingDirectory)/image-metadata.txt'
         artifactName: 'image-metadata'
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Kubernetes Manifests'
+      inputs:
+        pathToPublish: '$(Build.SourcesDirectory)/manifests'
+        artifactName: 'manifests'
+        publishLocation: 'Container'
