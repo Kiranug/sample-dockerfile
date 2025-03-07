@@ -6,18 +6,9 @@ parameters:
     displayName: "Provide Application Name"
     default: "myappdevtest2"
     type: string 
-
-  - name: useExistingImage
-    displayName: "Use Existing Image?"
-    type: boolean
-    default: false
-
-  - name: existingImage
-    displayName: "Existing Image Name"
-    type: string
-    default: ""
-
+    
 variables:
+  - group: dev-variables  # Linking Variable Group
   - name: dockerfilePath
     value: '$(Build.SourcesDirectory)/Dockerfile'
   - name: tag
@@ -30,7 +21,6 @@ variables:
 stages:
 - stage: BuildAndPush
   displayName: Build and Push Docker Image
-  condition: eq(${{ parameters.useExistingImage }}, false)  
   pool: default
   jobs:
   - job: Build
