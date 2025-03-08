@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: "{{NAMESPACE}}"  # Replace with your desired namespace or use a pipeline variable
+  name: "{{NAMESPACE}}"  # Replace with your namespace dynamically
 
 ---
 
@@ -9,7 +9,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: mysecretfromazure
-  namespace: "{{NAMESPACE}}"  # Make sure this matches the namespace from above
+  namespace: "{{NAMESPACE}}"  # Ensure this matches the namespace above
 type: Opaque
 data:
-  dbuser: "{{dbuser}}"  # Replace $(dbuser) with your pipeline variable or base64 encoded value
+  dbuser: "{{dbuser_base64}}"  # Base64-encoded value of dbuser
