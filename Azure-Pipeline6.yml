@@ -40,14 +40,14 @@ stages:
         echo "IMAGE_NAME=$(FINAL_IMAGE)" > $(Build.ArtifactStagingDirectory)/image-metadata.txt
       displayName: 'Save Image Metadata'
 
+    - script: |
+        mkdir -p $(Build.ArtifactStagingDirectory)/artifacts
+        cp $(Build.ArtifactStagingDirectory)/image-metadata.txt $(Build.ArtifactStagingDirectory)/artifacts/
+        cp -r $(Build.SourcesDirectory)/manifests $(Build.ArtifactStagingDirectory)/artifacts/
+      displayName: 'Prepare Artifacts for Publishing'
+
     - task: PublishBuildArtifacts@1
-      displayName: Publish Image Metadata
+      displayName: 'Publish Build Artifacts'
       inputs:
-        pathToPublish: '$(Build.ArtifactStagingDirectory)/image-metadata.txt'
-        artifactName: 'image-metadata'
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Kubernetes Manifests'
-      inputs:
-        pathToPublish: '$(Build.SourcesDirectory)/manifests'
-        artifactName: 'manifests'
-        publishLocation: 'Container'
+        pathToPublish: '$(Build.ArtifactStagingDirectory)/artifacts'
+        artifactName: 'build-artifacts'
