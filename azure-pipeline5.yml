@@ -110,16 +110,10 @@ stages:
         SECRET_NAME="$(dbuser--kk)"
         SECRET_ENV_VAR="${SECRET_NAME}"
         SECRET_VALUE=$(printenv $SECRET_ENV_VAR)
-
-        if [ -z "$SECRET_VALUE" ]; then
-            echo "❌ Secret $SECRET_NAME is missing or not retrieved!"
-            exit 1
-        else
-            echo "✅ Secret $SECRET_NAME retrieved successfully."
-        fi
-
+        echo "value from keyvault $SECRET_VALUE"
         # Encode the secret value in base64 (only for Kubernetes)
         SECRET_BASE64=$(echo -n "$SECRET_VALUE" | base64 -w 0)
+        echo "valuie from base $SECRET_BASE64"
 
         # Create Kubernetes secret
         kubectl create secret generic azure-keyvault-secrets -n default \
