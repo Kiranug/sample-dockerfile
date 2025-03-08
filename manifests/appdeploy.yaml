@@ -23,9 +23,9 @@ spec:
               value: "{{APP_NAME}}"
             - name: DBUSER
               valueFrom:
-              secretKeyRef:
-              name: mysecretfromazure
-              key: dbuser     # Reference the specific key in the secret
+                secretKeyRef:
+                  name: mysecretfromazure
+                  key: dbuser     # Reference the specific key in the secret
           ports:
             - containerPort: 3000  # Container will listen on port 3000
       imagePullSecrets:
