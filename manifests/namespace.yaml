@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "{{NAMESPACE}}"  # Replace with your desired namespace or use a pipeline variable
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecretfromazure
+  namespace: "{{NAMESPACE}}"  # Make sure this matches the namespace from above
+type: Opaque
+data:
+  DB_USER: "{{DB_USER}}"  # Replace $(dbuser) with your pipeline variable or base64 encoded value
