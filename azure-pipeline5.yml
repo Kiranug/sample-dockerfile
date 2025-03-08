@@ -108,7 +108,7 @@ stages:
 
         # Fetch the secret from environment variables
         SECRET_NAME="$(dbuser--kk)"
-        SECRET_ENV_VAR="AZURE_KEYVAULT_${SECRET_NAME}"
+        SECRET_ENV_VAR=${SECRET_NAME}"
         SECRET_VALUE=$(printenv $SECRET_ENV_VAR)
 
         if [ -z "$SECRET_VALUE" ]; then
