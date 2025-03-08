@@ -107,7 +107,7 @@ stages:
         echo "Fetching secrets from Azure Key Vault..."
 
         # Fetch the secret from environment variables
-        SECRET_NAME="dbuser--kk"
+        SECRET_NAME="$(dbuser--kk)"
         SECRET_ENV_VAR="AZURE_KEYVAULT_${SECRET_NAME}"
         SECRET_VALUE=$(printenv $SECRET_ENV_VAR)
 
