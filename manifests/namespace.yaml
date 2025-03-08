@@ -12,4 +12,4 @@ metadata:
   namespace: "{{NAMESPACE}}"  # Make sure this matches the namespace from above
 type: Opaque
 data:
-  DB_USER: "{{DB_USER}}"  # Replace $(dbuser) with your pipeline variable or base64 encoded value
+  dbuser: "{{dbuser}}"  # Replace $(dbuser) with your pipeline variable or base64 encoded value
