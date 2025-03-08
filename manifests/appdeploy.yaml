@@ -24,7 +24,6 @@ spec:
             - name: dbuser
               valueFrom:
               secretKeyRef:
-              name: mysecretfromazure  # Reference the secret name
               key: dbuser     # Reference the specific key in the secret
           ports:
             - containerPort: 3000  # Container will listen on port 3000
