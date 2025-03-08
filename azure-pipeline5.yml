@@ -1,6 +1,6 @@
-# build and deploy to aks and skil build if existing option is checked, user need to provide image name 
 trigger: none
 name: mypipelineskip-$(Build.SourceBranchName)
+
 parameters:
   - name: environment
     displayName: "Select Environment"
@@ -11,12 +11,11 @@ parameters:
       - qa
       - uat
       - prod
-      
-  - name: APP_NAME
-    displayName: Provide Appication Name
-    default: "myappdevtest2"
-    type: string 
 
+  - name: APP_NAME
+    displayName: "Provide Application Name"
+    type: string
+    default: "myappdevtest2"
 
   - name: useExistingImage
     displayName: "Do you want to use an existing image?"
@@ -26,157 +25,83 @@ parameters:
   - name: existingImage
     displayName: "Provide the full image name (if using an existing image)"
     type: string
-    default: "Provide image name if use an existing image is check "  # Empty default value makes it optional
-    
+    default: ""
+
 variables:
   - ${{ if eq(parameters.environment, 'dev') }}:
       - group: dev-variables
-      - name: dockerfilePath
-        value: '$(Build.SourcesDirectory)/Dockerfile'
-      - name: tag
-        value: '$(Build.BuildId)'
-      - name: APP_NAME
-        value: '${{ parameters.APP_NAME }}'
-      - name: FINAL_IMAGE
-        value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY)${{ parameters.environment }}:$(tag)'
-      - name: K8S_SERVICE_CONNECTION
-        value: "myakscred"  # Dev environment AKS connection
-
   - ${{ if eq(parameters.environment, 'qa') }}:
       - group: QA-variables
-      - name: dockerfilePath
-        value: '$(Build.SourcesDirectory)/Dockerfile'
-      - name: tag
-        value: '$(Build.BuildId)'
-      - name: APP_NAME
-        value: '${{ parameters.APP_NAME }}'
-      - name: FINAL_IMAGE
-        value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY)${{ parameters.environment }}:$(tag)'
-      - name: K8S_SERVICE_CONNECTION
-        value: "myakscred"  # Dev environment AKS connection
-
   - ${{ if eq(parameters.environment, 'uat') }}:
       - group: uat-variables
-      - name: dockerfilePath
-        value: '$(Build.SourcesDirectory)/Dockerfile'
-      - name: tag
-        value: '$(Build.BuildId)'
-      - name: APP_NAME
-        value: '${{ parameters.APP_NAME }}'
-      - name: FINAL_IMAGE
-        value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY)${{ parameters.environment }}:$(tag)'
-      - name: K8S_SERVICE_CONNECTION
-        value: "myakscred"  # Dev environment AKS connection
-
   - ${{ if eq(parameters.environment, 'prod') }}:
       - group: prod-variables
-      - name: dockerfilePath
-        value: '$(Build.SourcesDirectory)/Dockerfile'
-      - name: tag
-        value: '$(Build.BuildId)'
-      - name: APP_NAME
-        value: '${{ parameters.APP_NAME }}'
-      - name: FINAL_IMAGE
-        value: '$(CONTAINER_REGISTRY).azurecr.io/$(IMAGE_REPOSITORY)${{ parameters.environment }}:$(tag)'
-      - name: K8S_SERVICE_CONNECTION
-        value: "myakscred"  # Dev environment AKS connection
 
 stages:
-
 - stage: BuildAndPush
-  displayName: Build and Push Docker Image
-  condition: eq(${{ parameters.useExistingImage }}, false)  # 🛑 Skip if using existing image
+  displayName: "Build and Push Docker Image"
+  condition: eq(${{ parameters.useExistingImage }}, false)
   pool: default
   jobs:
   - job: Build
-    displayName: Build and Push Docker Image to ACR
+    displayName: "Build and Push Docker Image to ACR"
     steps:
-    - script: |
-        echo "useExistingImage: ${{ parameters.useExistingImage }}"  # Debugging log
-      displayName: 'Log useExistingImage Value'
-        
     - task: AzureKeyVault@2
-      displayName: 'Fetch Secrets from Azure Key Vault'
+      displayName: "Fetch Secrets from Azure Key Vault"
       inputs:
         azureSubscription: 'my-azure-service-connection'
         KeyVaultName: 'greenwashradarkeys'
-        SecretsFilter: '*'  # Fetch all secrets
+        SecretsFilter: '*'
         RunAsPreJob: false
-    
-    - script: |
-        if [ -z "$(dbuser--kk)" ]; then
-            echo "Secret is not set or failed to retrieve"
-        else
-            echo "Secret is successfully fetched"
-        fi
-      displayName: 'Check if Secret is Fetched'
 
     - script: |
-        echo "$(dbuser--kk)" > $(Build.SourcesDirectory)/secret.txt  # Write the secret value to file
-        cat $(Build.SourcesDirectory)/secret.txt  # Display the contents of the file
-      displayName: 'Write Secret to File and Display'
-
-    - task: CopyFiles@2
-      displayName: Copy file
-      inputs:
-        Contents: secret.txt
-        targetFolder: '$(Build.SourcesDirectory)'
+        echo "Fetching all secrets from Azure Key Vault..."
+        SECRETS=$(printenv | grep "AZURE_KEYVAULT_" | awk -F= '{print $1}' | sed 's/AZURE_KEYVAULT_//g')
+        SECRET_CMD="kubectl create secret generic azure-keyvault-secrets -n default"
+        for secret in $SECRETS; do
+          VALUE=$(printenv AZURE_KEYVAULT_$secret | base64 -w 0)
+          SECRET_CMD="$SECRET_CMD --from-literal=$secret=$VALUE"
+        done
+        eval "$SECRET_CMD --dry-run=client -o yaml | kubectl apply -f -"
+        echo "✅ Kubernetes Secret 'azure-keyvault-secrets' updated successfully!"
+      displayName: "Create Kubernetes Secret from Key Vault Secrets"
 
     - task: Docker@2
-      displayName: Build and Push Docker Image
+      displayName: "Build and Push Docker Image"
       inputs:
         command: buildAndPush
         repository: $(IMAGE_REPOSITORY)${{ parameters.environment }}
-        dockerfile: $(dockerfilePath)
-        containerRegistry: $(dockerRegistryServiceConnection)  # Now fetched from variable group
+        dockerfile: $(Build.SourcesDirectory)/Dockerfile
+        containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
-          $(tag)
-        buildArguments: |
-          ENVIRONMENT_TEST=$(environmenttest)  # Pass the variable
-
+          $(Build.BuildId)
 
 - stage: DeployToAKS
-  displayName: Deploy to AKS (${{ parameters.environment }}) using $(K8S_SERVICE_CONNECTION)
+  displayName: "Deploy to AKS (${{ parameters.environment }})"
   pool: default
   jobs:
   - job: Deploy
-    displayName: Deploy to AKS
+    displayName: "Deploy to AKS"
     steps:
-
-    - script: |
-        echo "Displaying Kubernetes Manifest File:"
-        cat $(Build.SourcesDirectory)/manifests/appdeploy.yaml
-      displayName: 'Cat Kubernetes Manifest File'
-    
     - ${{ if eq(parameters.useExistingImage, true) }}:
       - script: |
           echo "Using Existing Image: ${{ parameters.existingImage }}"
           echo "##vso[task.setvariable variable=FINAL_IMAGE]${{ parameters.existingImage }}"
-        displayName: 'Set Image Variable (Existing Image)'
-
+        displayName: "Set Image Variable (Existing Image)"
+    
     - ${{ if eq(parameters.useExistingImage, false) }}:
       - script: |
           echo "Using Newly Built Image: $(FINAL_IMAGE)"
           echo "##vso[task.setvariable variable=FINAL_IMAGE]$(FINAL_IMAGE)"
-        displayName: 'Set Image Variable (New Build)'
-
-    - script: |
-        echo "Final Image: $(FINAL_IMAGE)"
-      displayName: 'Verify Image Name'
-
+        displayName: "Set Image Variable (New Build)"
+    
     - script: |
         sed -i "s,{{APP_NAME}},$(APP_NAME)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
         sed -i "s,{{FINAL_IMAGE}},$(FINAL_IMAGE)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
-        sed -i "s,{{DB_USER}},$(dbuser-kk)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
-      displayName: 'Replace placeholders in appdeploy.yaml'
+      displayName: "Replace placeholders in appdeploy.yaml"
     
-    - script: |
-        echo "Displaying Kubernetes Manifest File after image replaced:"
-        cat $(Build.SourcesDirectory)/manifests/appdeploy.yaml
-      displayName: 'Cat Kubernetes Manifest File'
-
     - task: KubernetesManifest@1
-      displayName: Deploy to AKS
+      displayName: "Deploy to AKS"
       inputs:
         action: 'deploy'
         connectionType: 'kubernetesServiceConnection'
