@@ -22,7 +22,7 @@ spec:
             - name: APP_ENV
               value: "{{APP_NAME}}"
             - name: DBUSER
-              value: "$(DBUSER)"
+              value: $(DBUSER)
           ports:
             - containerPort: 3000  # Container will listen on port 3000
       imagePullSecrets:
