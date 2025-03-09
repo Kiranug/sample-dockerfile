@@ -192,7 +192,11 @@ stages:
         cat $(Build.SourcesDirectory)/manifests/appdeploy.yaml
         ls -lah '$(Build.SourcesDirectory)'
         ls -lah '$(Build.SourcesDirectory)/manifests'
+        echo -n $(DBUSER) | base64
         cat $(Build.SourcesDirectory)/manifests/namespace.yaml
+      env:
+        DBUSER: $(DBUSER)
+      continueOnError: true
 
       displayName: 'Cat Kubernetes Manifest File'
     - task: KubernetesManifest@1
@@ -201,6 +205,8 @@ stages:
         action: 'deploy'
         manifests: |
           $(Build.SourcesDirectory)/manifests/namespace.yaml
+          overrideValues: |
+            DBUSER=$(DBUSER)
       displayName: 'Create NameSpace'
 
     - task: KubernetesManifest@1
