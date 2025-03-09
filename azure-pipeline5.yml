@@ -184,6 +184,7 @@ stages:
     - script: |
         sed -i "s,{{APP_NAME}},$(APP_NAME)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
         sed -i "s,{{FINAL_IMAGE}},$(FINAL_IMAGE)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
+        sed -i "s,{{NAMESPACE}},$(NAMESPACE)," $(Build.SourcesDirectory)/manifests/namespace.yaml
       displayName: 'Replace placeholders in appdeploy.yaml'
     
     - script: |
