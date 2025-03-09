@@ -1,4 +1,4 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: "$(NAMESPACE)"  # This will be replaced by the pipeline variable NAMESPACE
+  name: "${{NAMESPACE}}"
