@@ -143,7 +143,7 @@ stages:
         tags: |
           $(tag)
         buildArguments: |
-          ENVIRONMENT_TEST=$(environmenttest)  # Pass the variable
+          ENVIRONMENT_TEST=$(DBUSER)  # Pass the variable
 
 
 - stage: DeployToAKS
@@ -173,13 +173,15 @@ stages:
 
     - script: |
         echo "Final Image: $(FINAL_IMAGE)"
-        echo "Value from ACR for dbuser--kk is $(DBUSER)" # Display the contents of the file
+        echo "Value from ACR for dbuser--kk is"
+        echo $(DBUSER)
+        DBUSERVALUE=$(DBUSER)
       displayName: 'Verify Image Name'
 
     - script: |
         sed -i "s,{{APP_NAME}},$(APP_NAME)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
         sed -i "s,{{FINAL_IMAGE}},$(FINAL_IMAGE)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
-        sed -i "s,{{DB_USER}},$(DBUSER)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
+        sed -i "s,{{DB_USER}},$(DBUSERVALUE)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
       displayName: 'Replace placeholders in appdeploy.yaml'
     
     - script: |
