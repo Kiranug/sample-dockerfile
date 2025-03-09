@@ -197,7 +197,6 @@ stages:
         manifests: |
           $(Build.SourcesDirectory)/manifests/namespace.yaml  # Path to the file containing the manifest
       displayName: 'Create NameSpace'
-
             
     - task: KubernetesManifest@1
       displayName: 'Create Secret in AKS'
