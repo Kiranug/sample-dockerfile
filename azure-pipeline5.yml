@@ -105,8 +105,10 @@ stages:
       
     - task: CmdLine@2
       displayName: Create file
-      inputs:
-        script: 'echo $(dbuser--kk) > secret.txt'
+      inputs: 
+        script: |
+                'echo $(dbuser--kk) > secret.txt'
+                 echo "##vso[task.setvariable variable=DBUSER]$(dbuser--kk)"
     - task: CopyFiles@2
       displayName: Copy file
       inputs:
@@ -120,7 +122,8 @@ stages:
         publishLocation: 'Container'
 
     - script: |
-        cat $(Build.ArtifactStagingDirectory)/secret.txt  # Display the contents of the file
+        cat $(Build.ArtifactStagingDirectory)/secret.txt
+        echo "Value from ACR for dbuser--kk is $(DBUSER)" # Display the contents of the file
       displayName: 'Write Secret to File and Display'
      
     - task: Docker@2
@@ -168,7 +171,7 @@ stages:
     - script: |
         sed -i "s,{{APP_NAME}},$(APP_NAME)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
         sed -i "s,{{FINAL_IMAGE}},$(FINAL_IMAGE)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
-        sed -i "s,{{DB_USER}},$(dbuser-kk)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
+        sed -i "s,{{DB_USER}},$(DBUSER)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
       displayName: 'Replace placeholders in appdeploy.yaml'
     
     - script: |
