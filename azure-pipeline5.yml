@@ -195,11 +195,9 @@ stages:
         cat $(Build.SourcesDirectory)/manifests/namespace.yaml
 # Step 1: Base64 encode the DBUSER secret
     - script: |
-        echo -n "$(DBUSER)" | base64
-      displayName: 'Base64 encode DBUSER'
-      env:
-        DBUSER: $(DBUSER)
-      continueOnError: true  # Continue even if there's an error, in case DBUSER is not set
+        export ENCODED_DBUSER=$(echo -n "$(DBUSER)" | base64)
+        echo "##vso[task.setvariable variable=ENCODED_DBUSER]$ENCODED_DBUSER"
+      displayName: 'Base64 Encode DBUSER'
 
 # Step 2: Deploy Secret with Base64 encoded value
     - task: KubernetesManifest@1
@@ -211,7 +209,7 @@ stages:
         manifests: |
           $(Build.SourcesDirectory)/manifests/namespace.yaml
         overrideValues: |
-          DBUSER=$(DBUSER)  # This value will be base64-encoded
+          DBUSER=$(ENCODED_DBUSER)  # This value will be base64-encoded
     - task: KubernetesManifest@1
       inputs:
         kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)
