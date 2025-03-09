@@ -200,7 +200,7 @@ stages:
         kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)
         action: 'deploy'
         manifests: |
-          $(Build.SourcesDirectory)/manifests/namespace.yaml  # Path to the file containing the manifest
+          $(Build.SourcesDirectory)/manifests/namespace.yaml
       displayName: 'Create NameSpace'
             
     - task: KubernetesManifest@1
