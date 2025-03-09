@@ -108,7 +108,7 @@ stages:
       inputs: 
         script: |
           echo $(dbuser--kk) > secret.txt
-          echo "##vso[task.setvariable variable=DBUSER;isOutput=true]$(dbuser--kk)"
+          echo "##vso[task.setvariable variable=DBUSER;issecret=true]$(dbuser--kk)"
           echo $(DBUSER)
       name: setSecret  # This is important for referencing later
 
