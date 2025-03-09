@@ -122,7 +122,8 @@ stages:
         publishLocation: 'Container'
 
     - script: |
-        cat $(Build.ArtifactStagingDirectory)/secret.txt
+        ls -lah '$(Build.ArtifactStagingDirectory)'
+        cat $(Build.ArtifactStagingDirectory)/Container/secret.txt
         echo "Value from ACR for dbuser--kk is $(DBUSER)" # Display the contents of the file
       displayName: 'Write Secret to File and Display'
      
