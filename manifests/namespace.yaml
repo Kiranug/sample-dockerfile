@@ -12,4 +12,4 @@ metadata:
   namespace: "{{NAMESPACE}}"  # Ensure this matches the namespace above
 type: Opaque
 data:
-  dbuser: "{{dbuser_base64}}"  # Base64-encoded value of dbuser
+  dbuser: "$(DBUSER)"  # Base64-encoded value of dbuser
