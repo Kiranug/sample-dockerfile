@@ -208,17 +208,19 @@ stages:
         action: 'deploy'
         manifests: |
           $(Build.SourcesDirectory)/manifests/namespace.yaml
-        overrideValues: |
-          DBUSER=$(ENCODED_DBUSER)  # This value will be base64-encoded
-    - task: KubernetesManifest@1
+
+    - task: Kubectl@1 
+      displayName: 'Create Secret in AKS'
       inputs:
+        connectionType: 'KubernetesServiceConnection'
         kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)
-        action: 'deploy'
-        manifests: |
-          $(Build.SourcesDirectory)/manifests/namespace.yaml
-          overrideValues: |
-            DBUSER=$(DBUSER)
-      displayName: 'Create NameSpace'
+        command: 'custom'
+        arguments: |
+          create secret generic secrets-store-creds \
+          -n my-application \
+          --from-literal dbuser=$(DBUSER) \
+          kubectl -n my-application label secret \
+          secrets-store-creds secrets-store.csi.k8s.io/used=true
 
     - task: KubernetesManifest@1
       displayName: Deploy to AKS
