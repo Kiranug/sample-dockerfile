@@ -166,6 +166,7 @@ stages:
 
     - script: |
         echo "Final Image: $(FINAL_IMAGE)"
+        echo "Value from ACR for dbuser--kk is $(DBUSER)" # Display the contents of the file
       displayName: 'Verify Image Name'
 
     - script: |
