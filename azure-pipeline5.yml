@@ -102,46 +102,27 @@ stages:
         KeyVaultName: 'greenwashradarkeys'
         SecretsFilter: '*'  # Fetch all secrets dynamically
         RunAsPreJob: false
-
-    - script: |
-        echo "Fetching secrets from Azure Key Vault..."
-
-        # Fetch the secret from environment variables
-        SECRET_NAME="$(dbuser--kk)"
-        SECRET_ENV_VAR="${SECRET_NAME}"
-        SECRET_VALUE=$(printenv $SECRET_ENV_VAR)
-        echo "value from keyvault $SECRET_VALUE"
-        # Encode the secret value in base64 (only for Kubernetes)
-        SECRET_BASE64=$(echo -n "$SECRET_VALUE" | base64 -w 0)
-        echo "valuie from base $SECRET_BASE64"
-
-        # Create Kubernetes secret
-        kubectl create secret generic azure-keyvault-secrets -n default \
-            --from-literal=$SECRET_NAME=$SECRET_VALUE --dry-run=client -o yaml | kubectl apply -f -
-
-        echo "✅ Kubernetes Secret 'azure-keyvault-secrets' updated successfully!"
-      displayName: 'Create Kubernetes Secret from Key Vault Secrets'
-
-    - script: |
-        if [ -z "$(dbuser-kk)" ]; then
-            echo "❌ Secret is not set or failed to retrieve"
-            exit 1
-        else
-            echo "✅ Secret is successfully fetched"
-        fi
-      displayName: 'Check if Secret is Fetched'
-
-    - script: |
-        echo "$(dbuser-kk)" > $(Build.SourcesDirectory)/secret.txt  # Write the secret value to file
-        cat $(Build.SourcesDirectory)/secret.txt  # Display the contents of the file
-      displayName: 'Write Secret to File and Display'
-
-    - task: CopyFiles@2
-      displayName: 'Copy file'
-      inputs:
-        Contents: 'secret.txt'
-        targetFolder: '$(Build.SourcesDirectory)'
       
+    - task: CmdLine@2
+      displayName: Create file
+      inputs:
+        script: 'echo $(dbuser--kk) > secret.txt'
+    - task: CopyFiles@2
+      displayName: Copy file
+      inputs:
+        Contents: secret.txt
+        targetFolder: '$(Build.ArtifactStagingDirectory)'
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Artifact
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+
+    - script: |
+        cat $(Build.ArtifactStagingDirectory)/secret.txt  # Display the contents of the file
+      displayName: 'Write Secret to File and Display'
+     
     - task: Docker@2
       displayName: Build and Push Docker Image
       inputs:
