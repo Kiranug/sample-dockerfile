@@ -198,7 +198,8 @@ stages:
           apiVersion: v1
           kind: Namespace
           metadata:
-            name: $(NAMESPACE)
+            name: "$(NAMESPACE)"
+      displayName: 'Create NameSpace'
             
     - task: KubernetesManifest@1
       displayName: 'Create Secret in AKS'
@@ -211,7 +212,7 @@ stages:
           kind: Secret
           metadata:
             name: my-secret
-            namespace: $(NAMESPACE)
+            namespace: "$(NAMESPACE)"
           type: Opaque
           data:
             DBUSER: $(DBUSER)
