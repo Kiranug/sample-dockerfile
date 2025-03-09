@@ -2,14 +2,3 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: "{{NAMESPACE}}"  # Replace with your namespace dynamically
-
----
-
-apiVersion: v1
-kind: Secret
-metadata:
-  name: mysecretfromazure
-  namespace: "{{NAMESPACE}}"  # Ensure this matches the namespace above
-type: Opaque
-data:
-  dbuser: "$(DBUSER)"  # Base64-encoded value of dbuser
