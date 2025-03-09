@@ -189,6 +189,7 @@ stages:
     - script: |
         echo "Displaying Kubernetes Manifest File after image replaced:"
         cat $(Build.SourcesDirectory)/manifests/appdeploy.yaml
+        ls -lah '$(Build.SourcesDirectory)'
       displayName: 'Cat Kubernetes Manifest File'
     - task: KubernetesManifest@1
       inputs:
