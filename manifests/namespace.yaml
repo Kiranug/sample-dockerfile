@@ -10,4 +10,4 @@ metadata:
   namespace: {{NAMESPACE}}
 type: Opaque
 data:
-  DBUSER: $(DBUSER)  
+  DBUSER: "$(DBUSER)"
