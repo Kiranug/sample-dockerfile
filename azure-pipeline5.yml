@@ -208,17 +208,17 @@ stages:
         action: 'deploy'
         manifests: |
           $(Build.SourcesDirectory)/manifests/namespace.yaml
-
-    - task: Kubectl@1 
+    - task: AzureCLI@2
       displayName: 'Create Secret in AKS'
       inputs:
-        connectionType: 'KubernetesServiceConnection'
-        kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)
-        command: 'custom'
-        arguments: |
-          create secret generic secrets-store-creds \
+        azureSubscription: 'my-azure-service-connection'
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          kubectl create secret generic secrets-store-creds \
           -n my-application \
-          --from-literal dbuser=$(DBUSER) \
+          --from-literal dbuser=$(DBUSER)
+
           kubectl -n my-application label secret \
           secrets-store-creds secrets-store.csi.k8s.io/used=true
 
