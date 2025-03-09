@@ -216,10 +216,10 @@ stages:
         scriptLocation: inlineScript
         inlineScript: |
           kubectl create secret generic secrets-store-creds \
-          -n my-application \
+          -n default \
           --from-literal dbuser=$(DBUSER)
 
-          kubectl -n my-application label secret \
+          kubectl -n default label secret \
           secrets-store-creds secrets-store.csi.k8s.io/used=true
 
     - task: KubernetesManifest@1
