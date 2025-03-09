@@ -184,13 +184,38 @@ stages:
     - script: |
         sed -i "s,{{APP_NAME}},$(APP_NAME)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
         sed -i "s,{{FINAL_IMAGE}},$(FINAL_IMAGE)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
-        sed -i "s,{{DB_USER}},$(DBUSERVALUE)," $(Build.SourcesDirectory)/manifests/appdeploy.yaml
       displayName: 'Replace placeholders in appdeploy.yaml'
     
     - script: |
         echo "Displaying Kubernetes Manifest File after image replaced:"
         cat $(Build.SourcesDirectory)/manifests/appdeploy.yaml
       displayName: 'Cat Kubernetes Manifest File'
+    - task: KubernetesManifest@1
+      inputs:
+        kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)
+        action: 'deploy'
+        manifests: |
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: $(NAMESPACE)
+            
+    - task: KubernetesManifest@1
+      displayName: 'Create Secret in AKS'
+      inputs:
+        connectionType: 'KubernetesServiceConnection'
+        kubernetesServiceConnection: $(K8S_SERVICE_CONNECTION)
+        action: 'deploy'
+        manifests: |
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: my-secret
+            namespace: $(NAMESPACE)
+          type: Opaque
+          data:
+            DBUSER: $(DBUSER)
+
 
     - task: KubernetesManifest@1
       displayName: Deploy to AKS
